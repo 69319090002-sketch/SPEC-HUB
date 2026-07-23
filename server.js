@@ -91,7 +91,6 @@ app.post('/api/login', (req, res) => {
             return res.status(400).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
         }
 
-        // ส่งข้อมูลผู้ใช้งานและ role กลับไปที่ Frontend
         return res.status(200).json({
             message: 'เข้าสู่ระบบสำเร็จ',
             username: user.username,
@@ -101,17 +100,15 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// --- ADMIN API ENDPOINTS ---
-
 // API พิเศษสำหรับอัปเกรด admin1234 ให้เป็น admin
 app.get('/api/make-me-admin', (req, res) => {
     db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`, function(err) {
         if (err) return res.send('เกิดข้อผิดพลาด: ' + err.message);
-        res.send('สำเร็จ! บัญชี admin1234 ได้รับสิทธิ์ Admin เรียบร้อยแล้วครับ ลองกด Login ใหม่ได้เลย');
+        res.send('สำเร็จ! บัญชี admin1234 ได้รับสิทธิ์ Admin เรียบร้อยแล้วครับ');
     });
 });
 
-// 1. API ดึงรายชื่อผู้ใช้ทั้งหมด (สำหรับ Admin Panel)
+// API ดึงรายชื่อผู้ใช้ทั้งหมด (สำหรับ Admin Panel)
 app.get('/api/admin/users', (req, res) => {
     const sql = `SELECT id, username, email, role, created_at FROM users ORDER BY id DESC`;
     db.all(sql, [], (err, rows) => {
@@ -122,7 +119,7 @@ app.get('/api/admin/users', (req, res) => {
     });
 });
 
-// 2. API แก้ไขข้อมูลผู้ใช้ และ/หรือ ตั้งรหัสผ่านใหม่ (สำหรับ Admin)
+// API แก้ไขข้อมูลผู้ใช้ และ/หรือ ตั้งรหัสผ่านใหม่ (สำหรับ Admin)
 app.put('/api/admin/users/:id', async (req, res) => {
     const userId = req.params.id;
     const { username, email, newPassword } = req.body;
@@ -136,7 +133,7 @@ app.put('/api/admin/users/:id', async (req, res) => {
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             const sql = `UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?`;
             
-            db.run(sql, [username, email, hashedPassword, userId], function (err) {
+            db.run(sql, [username, email, hashedPassword], function (err) {
                 if (err) {
                     return res.status(500).json({ message: 'ไม่สามารถอัปเดตข้อมูลผู้ใช้ได้' });
                 }
@@ -157,7 +154,7 @@ app.put('/api/admin/users/:id', async (req, res) => {
     }
 });
 
-// เริ่มต้นเปิด Server (ต้องอยู่ท้ายสุดเสมอ)
+// เริ่มต้นเปิด Server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
