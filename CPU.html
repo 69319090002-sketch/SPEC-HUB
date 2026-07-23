@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SPEC HUB - CPU</title>
+    <link rel="stylesheet" href="theme-style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #d8d8d8;
+            color: #111;
+        }
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 18px;
+            background: linear-gradient(180deg, #e5e5e5 0%, #c8c8c8 100%);
+        }
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            margin-bottom: 20px;
+        }
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+        nav {
+            display: flex;
+            gap: 24px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #222;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        nav a:hover {
+            color: #0f2a4c;
+        }
+        nav a.active {
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        .header-actions a {
+            color: #fff;
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            padding: 10px 18px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .hero {
+            width: 100%;
+            max-width: 1200px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(245,245,245,0.98));
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.14);
+            padding: 30px;
+            margin-bottom: 24px;
+        }
+        .hero-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+        .hero-top .search-box {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            border-radius: 999px;
+            background: #f6f6f6;
+            border: 1px solid #d2d2d2;
+        }
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 1rem;
+            color: #111;
+        }
+        .search-box button {
+            border: none;
+            background: transparent;
+            color: #0f2a4c;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(240px, 1fr));
+            gap: 22px;
+        }
+        .card {
+            background: rgba(255,255,255,0.92);
+            border-radius: 22px;
+            box-shadow: 0 18px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .card-image {
+            background: #e8e8e8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            padding: 16px;
+            overflow: hidden;
+        }
+        .card-image img.product-box {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* ไม่บีบภาพ */
+            clip-path: none;     /* ลบการตัดขอบ */
+            transform: none;     /* ลบการซูม */
+        }
+        .card-body {
+            padding: 20px 22px 24px;
+        }
+        .cpu-name {
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .spec-table td {
+            padding: 10px 0;
+            color: #4a4a4a;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            font-size: 0.92rem;
+        }
+        .spec-table td:first-child {
+            color: #777;
+            width: 42%;
+        }
+        .spec-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #111;
+        }
+        .card-body .spec-table tr:last-child td {
+            border-bottom: none;
+        }
+        .no-result {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        @media (max-width: 980px) { .cards { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 740px) {
+            header { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .hero { padding: 22px; }
+            .cards { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <a href="HOME.html" class="brand">SPEC HUB</a>
+            <nav>
+                <a href="HOME.html">HOME</a>
+                <a href="CPU.html" class="active">CPU</a>
+                <a href="GPU.html">GPU</a>
+                <a href="CASE.html">CASE</a>
+                <a href="MAIN BORD.html">MAIN BORD</a>
+                <a href="COMPARE.html">COMPARE</a>
+            </nav>
+            <div class="header-actions">
+                <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
+                <a href="login.html" id="auth-action">Login</a>
+            </div>
+        </header>
+        <section class="hero">
+            <div class="hero-top">
+                <div class="search-box">
+                    <!-- ใส่ list="cpuOptionsCPU" เพื่อเชื่อมต่อกับ Autocomplete -->
+                    <input type="text" id="searchInput" placeholder="Search" list="cpuOptionsCPU">
+                    <button>ค้นหา</button>
+                </div>
+                <!-- แท็กสำหรับตัวเลือกอัตโนมัติ -->
+                <datalist id="cpuOptionsCPU"></datalist>
+            </div>
+            
+            <div class="cards" id="cpuListContainer"></div>
+        </section>
+    </div>
+
+    <script>
+        (function(){
+            function getCurrentPage(){
+                return window.location.pathname.split('/').pop() || 'HOME.html';
+            }
+            function updateAuth(){
+                const auth = document.getElementById('auth-action');
+                const user = localStorage.getItem('spechub_user');
+                if(!auth) return;
+                if(user){
+                    auth.textContent = user;
+                    auth.href = '#';
+                    auth.onclick = function(e){ 
+                        e.preventDefault(); 
+                        if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
+                            localStorage.removeItem('spechub_user'); 
+                            window.location = getCurrentPage();
+                        }
+                    };
+                } else {
+                    auth.textContent = 'Login';
+                    auth.href = 'login.html';
+                    auth.onclick = null;
+                }
+            }
+            updateAuth();
+        })();
+    </script>
+
+    <script src="cpu-data.js"></script>
+    <script src="cpu-script.js"></script>
+    <script src="theme-toggle.js"></script>
+</body>
+</html>
