@@ -35,8 +35,7 @@ db.serialize(() => {
         )
     `);
 
-    // 💡 [ตัวเลือกตั้งค่า Admin]: เปลี่ยนชื่อในเครื่องหมายคำพูด 'admin' เป็น Username ของคุณ
-    // สคริปต์นี้จะช่วยแต่งตั้งบัญชีนี้ให้เป็น admin อัตโนมัติทันทีที่เซิร์ฟเวอร์รัน
+    // สคริปต์นี้จะอัปเดตบทบาทบัญชี admin1234 ให้เป็น admin
     db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`);
 });
 
@@ -104,6 +103,14 @@ app.post('/api/login', (req, res) => {
 
 // --- ADMIN API ENDPOINTS ---
 
+// API พิเศษสำหรับอัปเกรด admin1234 ให้เป็น admin
+app.get('/api/make-me-admin', (req, res) => {
+    db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`, function(err) {
+        if (err) return res.send('เกิดข้อผิดพลาด: ' + err.message);
+        res.send('สำเร็จ! บัญชี admin1234 ได้รับสิทธิ์ Admin เรียบร้อยแล้วครับ ลองกด Login ใหม่ได้เลย');
+    });
+});
+
 // 1. API ดึงรายชื่อผู้ใช้ทั้งหมด (สำหรับ Admin Panel)
 app.get('/api/admin/users', (req, res) => {
     const sql = `SELECT id, username, email, role, created_at FROM users ORDER BY id DESC`;
@@ -125,7 +132,6 @@ app.put('/api/admin/users/:id', async (req, res) => {
     }
 
     try {
-        // กรณีที่ Admin กรอกรหัสผ่านใหม่เข้ามาด้วย
         if (newPassword && newPassword.trim() !== '') {
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             const sql = `UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?`;
@@ -137,7 +143,6 @@ app.put('/api/admin/users/:id', async (req, res) => {
                 return res.status(200).json({ message: 'แก้ไขข้อมูลและเปลี่ยนรหัสผ่านเรียบร้อยแล้ว' });
             });
         } else {
-            // กรณีแก้แค่ Username หรือ Email (ไม่เปลี่ยนรหัสผ่าน)
             const sql = `UPDATE users SET username = ?, email = ? WHERE id = ?`;
             
             db.run(sql, [username, email, userId], function (err) {
@@ -152,13 +157,7 @@ app.put('/api/admin/users/:id', async (req, res) => {
     }
 });
 
-// เริ่มต้นเปิด Server
+// เริ่มต้นเปิด Server (ต้องอยู่ท้ายสุดเสมอ)
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-    app.get('/api/make-me-admin', (req, res) => {
-    db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`, function(err) {
-        if (err) return res.send('เกิดข้อผิดพลาด: ' + err.message);
-        res.send('สำเร็จ! บัญชี admin1234 ได้รับสิทธิ์ Admin เรียบร้อยแล้วครับ ลองกด Login ใหม่ได้เลย');
-    });
-});
 });
