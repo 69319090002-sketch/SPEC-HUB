@@ -2,33 +2,43 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // รับไฟล์ static (HTML, CSS, JS)
+app.use(express.static(__dirname));
 
-// 1. เชื่อมต่อฐานข้อมูล SQLite (สร้างไฟล์ database.db อัตโนมัติ)
-const db = new sqlite3.Database('./database.db', (err) => {
+// 1. เชื่อมต่อฐานข้อมูล SQLite
+const dbPath = path.resolve(__dirname, 'database.db');
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
     } else {
-        console.log('Connected to SQLite database.');
+        console.log('Connected to SQLite database at:', dbPath);
     }
 });
 
-// 2. สร้างตาราง users หากยังไม่มี
-db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
+// 2. สร้างตาราง users (เพิ่มคอลัมน์ role)
+db.serialize(() => {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT DEFAULT 'user',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    // 💡 [ตัวเลือกตั้งค่า Admin]: เปลี่ยนชื่อในเครื่องหมายคำพูด 'admin' เป็น Username ของคุณ
+    // สคริปต์นี้จะช่วยแต่งตั้งบัญชีนี้ให้เป็น admin อัตโนมัติทันทีที่เซิร์ฟเวอร์รัน
+    db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`);
+});
 
 // --- API Endpoints ---
 
@@ -41,13 +51,11 @@ app.post('/api/signup', async (req, res) => {
     }
 
     try {
-        // Hash รหัสผ่านก่อนบันทึกลง Database
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        const sql = `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`;
+        const sql = `INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'user')`;
+        
         db.run(sql, [username, email, hashedPassword], function (err) {
             if (err) {
-                // เช็คว่า Username หรือ Email ซ้ำหรือไม่
                 if (err.message.includes('UNIQUE constraint failed')) {
                     return res.status(400).json({ message: 'Username หรือ Email นี้ถูกใช้งานแล้ว' });
                 }
@@ -69,7 +77,6 @@ app.post('/api/login', (req, res) => {
         return res.status(400).json({ message: 'กรุณากรอก Username และ Password' });
     }
 
-    // ค้นหาผู้ใช้จาก Username หรือ Email
     const sql = `SELECT * FROM users WHERE username = ? OR email = ?`;
     db.get(sql, [username, username], async (err, user) => {
         if (err) {
@@ -80,22 +87,72 @@ app.post('/api/login', (req, res) => {
             return res.status(400).json({ message: 'ไม่พบชื่อผู้ใช้นี้ในระบบ' });
         }
 
-        // ตรวจสอบรหัสผ่านว่าตรงกับที่ Hash ไว้หรือไม่
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
             return res.status(400).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
         }
 
-        // ส่งข้อมูลผู้ใช้งานกลับ (ไม่ส่ง password กลับไป)
+        // ส่งข้อมูลผู้ใช้งานและ role กลับไปที่ Frontend
         return res.status(200).json({
             message: 'เข้าสู่ระบบสำเร็จ',
             username: user.username,
-            email: user.email
+            email: user.email,
+            role: user.role || 'user'
         });
     });
 });
 
+// --- ADMIN API ENDPOINTS ---
+
+// 1. API ดึงรายชื่อผู้ใช้ทั้งหมด (สำหรับ Admin Panel)
+app.get('/api/admin/users', (req, res) => {
+    const sql = `SELECT id, username, email, role, created_at FROM users ORDER BY id DESC`;
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้' });
+        }
+        res.status(200).json(rows);
+    });
+});
+
+// 2. API แก้ไขข้อมูลผู้ใช้ และ/หรือ ตั้งรหัสผ่านใหม่ (สำหรับ Admin)
+app.put('/api/admin/users/:id', async (req, res) => {
+    const userId = req.params.id;
+    const { username, email, newPassword } = req.body;
+
+    if (!username || !email) {
+        return res.status(400).json({ message: 'กรุณากรอก Username และ Email' });
+    }
+
+    try {
+        // กรณีที่ Admin กรอกรหัสผ่านใหม่เข้ามาด้วย
+        if (newPassword && newPassword.trim() !== '') {
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            const sql = `UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?`;
+            
+            db.run(sql, [username, email, hashedPassword, userId], function (err) {
+                if (err) {
+                    return res.status(500).json({ message: 'ไม่สามารถอัปเดตข้อมูลผู้ใช้ได้' });
+                }
+                return res.status(200).json({ message: 'แก้ไขข้อมูลและเปลี่ยนรหัสผ่านเรียบร้อยแล้ว' });
+            });
+        } else {
+            // กรณีแก้แค่ Username หรือ Email (ไม่เปลี่ยนรหัสผ่าน)
+            const sql = `UPDATE users SET username = ?, email = ? WHERE id = ?`;
+            
+            db.run(sql, [username, email, userId], function (err) {
+                if (err) {
+                    return res.status(500).json({ message: 'ไม่สามารถอัปเดตข้อมูลผู้ใช้ได้' });
+                }
+                return res.status(200).json({ message: 'แก้ไขข้อมูลเรียบร้อยแล้ว' });
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });
+    }
+});
+
 // เริ่มต้นเปิด Server
 app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });

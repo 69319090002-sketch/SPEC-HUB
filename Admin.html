@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>SPEC HUB - Admin Panel</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; margin: 0; }
+        .container { max-width: 1000px; margin: auto; background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+        h2 { margin: 0; color: #38bdf8; }
+        .btn-logout { background: #ef4444; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-logout:hover { background: #dc2626; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; border: 1px solid #334155; text-align: left; }
+        th { background: #0f172a; color: #94a3b8; }
+        input { padding: 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; width: 90%; }
+        .btn-save { background: #2563eb; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-save:hover { background: #1d4ed8; }
+        .badge-admin { background: #0284c7; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .badge-user { background: #475569; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🛠️ ระบบจัดการผู้ใช้งาน (Admin Panel)</h2>
+            <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>สิทธิ์</th>
+                    <th>ตั้งรหัสผ่านใหม่ (ระบุเมื่อต้องการเปลี่ยน)</th>
+                    <th>จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <tr><td colspan="6" style="text-align:center;">กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = 'https://spec-hub.onrender.com';
+
+        // ป้องกันไม่ให้ User ปกติแอบเข้ามาหน้านี้
+        if (localStorage.getItem('spechub_role') !== 'admin') {
+            alert('คุณไม่มีสิทธิ์เข้าถึงหน้านี้!');
+            window.location = 'Login.html';
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/users`);
+                const users = await res.json();
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '';
+
+                users.forEach(user => {
+                    const roleBadge = user.role === 'admin' ? '<span class="badge-admin">Admin</span>' : '<span class="badge-user">User</span>';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td><input type="text" id="user-${user.id}" value="${user.username}"></td>
+                            <td><input type="email" id="email-${user.id}" value="${user.email}"></td>
+                            <td>${roleBadge}</td>
+                            <td><input type="password" id="pass-${user.id}" placeholder="ป้อนรหัสผ่านใหม่"></td>
+                            <td><button class="btn-save" onclick="updateUser(${user.id})">บันทึก</button></td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                alert('ไม่สามารถดึงข้อมูลผู้ใช้ได้');
+            }
+        }
+
+        async function updateUser(id) {
+            const username = document.getElementById(`user-${id}`).value.trim();
+            const email = document.getElementById(`email-${id}`).value.trim();
+            const newPassword = document.getElementById(`pass-${id}`).value;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, newPassword })
+                });
+
+                const data = await res.json();
+                alert(data.message);
+                loadUsers(); // โหลดข้อมูลใหม่
+            } catch (err) {
+                alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location = 'Login.html';
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>
