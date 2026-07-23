@@ -1,15 +1,17 @@
 {
   "name": "spec-hub-backend",
   "version": "1.0.0",
-  "description": "Local backend for SPEC HUB login/signup using JSON file storage.",
+  "description": "Backend for SPEC HUB login/signup",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "npm rebuild sqlite3"
   },
   "dependencies": {
-    "bcrypt": "^6.0.0",
-    "express": "^4.22.2",
-    "sqlite3": "^6.0.1"
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
   },
   "keywords": [],
   "author": "",
