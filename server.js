@@ -22,8 +22,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
-// 2. สร้างตาราง users (เพิ่มคอลัมน์ role)
+// 2. สร้างตารางและอัปเดตโครงสร้าง DB แบบปลอดภัย
 db.serialize(() => {
+    // สร้างตารางหากยังไม่มี
     db.run(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,8 +36,18 @@ db.serialize(() => {
         )
     `);
 
-    // สคริปต์นี้จะอัปเดตบทบาทบัญชี admin1234 ให้เป็น admin
-    db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`);
+    // 💡 ป้องกัน Error: ตรวจสอบและเพิ่มคอลัมน์ role ลงในฐานข้อมูลเดิมหากยังไม่มี
+    db.run(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'`, (err) => {
+        if (err) {
+            // ถ้ามีคอลัมน์ role อยู่แล้ว จะข้ามไปไม่แจ้ง Error
+            console.log('Column "role" already exists or created.');
+        } else {
+            console.log('Column "role" added successfully.');
+        }
+
+        // อัปเดตสิทธิ์ให้ admin1234
+        db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`);
+    });
 });
 
 // --- API Endpoints ---
@@ -104,7 +115,7 @@ app.post('/api/login', (req, res) => {
 app.get('/api/make-me-admin', (req, res) => {
     db.run(`UPDATE users SET role = 'admin' WHERE username = 'admin1234'`, function(err) {
         if (err) return res.send('เกิดข้อผิดพลาด: ' + err.message);
-        res.send('สำเร็จ! บัญชี admin1234 ได้รับสิทธิ์ Admin เรียบร้อยแล้วครับ');
+        res.send('สำเร็จ! บัญชี admin1234 ได้รับสิทธิ์ Admin เรียบร้อยแล้วครับ ลองกด Login ใหม่ได้เลย');
     });
 });
 
@@ -133,7 +144,7 @@ app.put('/api/admin/users/:id', async (req, res) => {
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             const sql = `UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?`;
             
-            db.run(sql, [username, email, hashedPassword], function (err) {
+            db.run(sql, [username, email, hashedPassword, userId], function (err) {
                 if (err) {
                     return res.status(500).json({ message: 'ไม่สามารถอัปเดตข้อมูลผู้ใช้ได้' });
                 }
