@@ -217,6 +217,7 @@
 
     <!-- เรียกใช้สคริปต์และฐานข้อมูลเดิม -->
     <script src="theme-toggle.js"></script>
+    <script src="data-store.js"></script>
     <script src="cpu-data.js"></script>
     <script src="gpu-data.js"></script>
     <script src="case-data.js"></script>
@@ -304,19 +305,18 @@
 
         // ดึงตัวแปร Database ของหมวดที่เลือก (รองรับ LocalStorage)
         function getDatabase(cat) {
-            const storedData = localStorage.getItem(`spechub_${cat}_data`);
-            if (storedData) return JSON.parse(storedData);
-
-            if (cat === 'cpu') return typeof cpuDatabase !== 'undefined' ? cpuDatabase : [];
-            if (cat === 'gpu') return typeof gpuDatabase !== 'undefined' ? gpuDatabase : [];
-            if (cat === 'case') return typeof caseDatabase !== 'undefined' ? caseDatabase : [];
-            if (cat === 'mainboard') return typeof mainboardDatabase !== 'undefined' ? mainboardDatabase : [];
-            return [];
+            const fallbackMap = {
+                cpu: typeof cpuDatabase !== 'undefined' ? cpuDatabase : [],
+                gpu: typeof gpuDatabase !== 'undefined' ? gpuDatabase : [],
+                case: typeof caseDatabase !== 'undefined' ? caseDatabase : [],
+                mainboard: typeof mainboardDatabase !== 'undefined' ? mainboardDatabase : []
+            };
+            return getCategoryData(cat, fallbackMap[cat] || []);
         }
 
         // บันทึกลง LocalStorage
         function saveDatabase(cat, data) {
-            localStorage.setItem(`spechub_${cat}_data`, JSON.stringify(data));
+            saveCategoryData(cat, data);
         }
 
         // โหลดข้อมูลเข้าตาราง

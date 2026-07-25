@@ -257,23 +257,27 @@
     </div>
     
     <script>
-        // บังคับเซ็ตค่าลง LocalStorage ให้ตรงกับบัญชี admin1234
-        localStorage.setItem('spechub_user', 'admin1234');
-
         const auth = document.getElementById('auth-action');
+        const currentUser = localStorage.getItem('spechub_user');
         if (auth) {
-            auth.textContent = 'admin1234';
-            auth.href = '#';
-            auth.onclick = function(e){
-                e.preventDefault();
-                if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
-                    localStorage.removeItem('spechub_user');
-                    window.location.href = 'login.html';
-                }
-            };
+            if (currentUser) {
+                auth.textContent = currentUser;
+                auth.href = '#';
+                auth.onclick = function(e){
+                    e.preventDefault();
+                    if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
+                        localStorage.removeItem('spechub_user');
+                        window.location.href = 'login.html';
+                    }
+                };
+            } else {
+                auth.textContent = 'Login';
+                auth.href = 'login.html';
+            }
         }
     </script>
 
+    <script src="data-store.js"></script>
     <script src="cpu-data.js"></script>
     <script src="gpu-data.js"></script>
     <script src="case-data.js"></script>

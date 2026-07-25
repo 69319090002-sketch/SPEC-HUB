@@ -1,5 +1,5 @@
 // รายการข้อมูล CPU ยอดนิยมสำหรับหน้าเว็บ SPEC HUB
-const cpuDatabase = [
+var cpuDatabase = getCategoryData('cpu', [
   // ==========================================
   // AMD RYZEN 9000 SERIES (AM5)
   // ==========================================
@@ -281,4 +281,4 @@ const cpuDatabase = [
     cooler: "Intel Laminar RM1",
     image: "assets/Intel Core i3.png"
   }
-];
+]);

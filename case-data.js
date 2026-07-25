@@ -1,5 +1,5 @@
 // case-data.js
-const caseDatabase = [
+var caseDatabase = getCategoryData('case', [
     { name: "NZXT H7 Flow RGB", type: "Mid Tower", motherboard: "ATX / Micro-ATX", maxGpuLength: "330 mm", maxCpuCooler: "165 mm", fanSupport: "4x 120mm", color: "Black / White", image: "assets/NZXT.png" },
     { name: "Corsair 4000D Airflow", type: "Mid Tower", motherboard: "ATX / Micro-ATX", maxGpuLength: "390 mm", maxCpuCooler: "170 mm", fanSupport: "6x 120mm", color: "Black / White", image: "assets/Corsair.png" },
     { name: "Lian Li Lancool 215", type: "Micro Tower", motherboard: "Micro-ATX / Mini-ITX", maxGpuLength: "325 mm", maxCpuCooler: "160 mm", fanSupport: "3x 120mm", color: "Black / Blue", image: "assets/Lian Li.png" },
@@ -30,4 +30,4 @@ const caseDatabase = [
     { name: "Thermaltake Divider 300 TG", type: "Mid Tower", motherboard: "ATX / Micro-ATX / Mini-ITX", maxGpuLength: "380 mm", maxCpuCooler: "165 mm", fanSupport: "6x 120mm", color: "Black", image: "assets/Thermaltake.png" },
     { name: "Lian Li Lancool 215 Mesh", type: "Mid Tower", motherboard: "ATX / Micro-ATX / Mini-ITX", maxGpuLength: "360 mm", maxCpuCooler: "170 mm", fanSupport: "6x 120mm", color: "Black", image: "assets/Lian Li.png" },
     { name: "NZXT H5 Flow", type: "Mid Tower", motherboard: "ATX / Micro-ATX / Mini-ITX", maxGpuLength: "381 mm", maxCpuCooler: "165 mm", fanSupport: "6x 120mm", color: "Black", image: "assets/NZXT.png" }
-];
+]);

@@ -1,5 +1,5 @@
 // gpu-data.js
-const gpuDatabase = [
+var gpuDatabase = getCategoryData('gpu', [
     {
         name: "Palit GeForce RTX 3050 Dual",
         brand: "Palit",
@@ -360,4 +360,4 @@ const gpuDatabase = [
         warranty: "3 Years",
         image: "assets/AMD.png"
     }
-];
+]);

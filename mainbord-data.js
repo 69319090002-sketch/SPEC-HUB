@@ -1,5 +1,5 @@
 // mainbord-data.js
-const mainboardDatabase = [
+var mainboardDatabase = getCategoryData('mainboard', [
     { name: "ASUS ROG STRIX B850-E", socket: "AM5", formFactor: "ATX", chipset: "B850", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "14x USB 3.2", image: "assets/ASUS.png" },
     { name: "MSI MPG B850 EDGE", socket: "AM5", formFactor: "ATX", chipset: "B850", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "12x USB 3.2", image: "assets/MSI.png" },
     { name: "Gigabyte B850 AORUS", socket: "AM5", formFactor: "ATX", chipset: "B850", memorySlots: "4 x DIMM DDR5", m2Slots: "3 x M.2", usbPorts: "16x USB 3.2", image: "assets/GIGABYTE.png" },
@@ -24,4 +24,4 @@ const mainboardDatabase = [
     { name: "ASUS PRIME X670-P WIFI", socket: "AM5", formFactor: "ATX", chipset: "X670", memorySlots: "4 x DIMM DDR5", m2Slots: "4 x M.2", usbPorts: "12x USB 3.2", image: "assets/ASUS.png" },
     { name: "MSI MEG B650I UNIFY", socket: "AM5", formFactor: "Mini-ITX", chipset: "B650", memorySlots: "2 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "8x USB 3.2", image: "assets/MSI.png" },
     { name: "ASRock X670E Aqua PCIE4", socket: "AM5", formFactor: "ATX", chipset: "X670E", memorySlots: "4 x DIMM DDR5", m2Slots: "5 x M.2", usbPorts: "16x USB 3.2", image: "assets/ASRock.png" }
-];
+]);
