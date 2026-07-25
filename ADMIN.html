@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SPEC HUB - Admin Management</title>
+    <link rel="stylesheet" href="theme-style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #d8d8d8;
+            color: #111;
+        }
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(180deg, #e5e5e5 0%, #c7c7c7 100%);
+        }
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            margin-bottom: 30px;
+        }
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+        nav { display: flex; gap: 26px; align-items: center; }
+        nav a {
+            text-decoration: none; color: #222; font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease;
+        }
+        nav a:hover { color: #0f2a4c; }
+        nav a.active {
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        .admin-badge {
+            background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 6px; font-weight: 700;
+        }
+
+        /* Admin Container */
+        .admin-container {
+            width: 100%;
+            max-width: 1200px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .admin-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0f2a4c;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            padding: 8px 18px;
+            border: none;
+            background: #f3f4f6;
+            color: #4b5563;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        /* Form & Inputs */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.88rem; font-weight: 700; color: #334155; }
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            grid-column: 1 / -1;
+        }
+        .btn-submit {
+            background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 700; cursor: pointer;
+        }
+        .btn-cancel {
+            background: #64748b; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 700; cursor: pointer; display: none;
+        }
+
+        /* Data Table */
+        .table-responsive { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.92rem;
+        }
+        th { background: #f1f5f9; color: #1e293b; font-weight: 700; }
+        .btn-edit {
+            background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-right: 4px;
+        }
+        .btn-delete {
+            background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <a href="HOME.html" class="brand">SPEC HUB</a>
+            <nav>
+                <a href="HOME.html">HOME</a>
+                <a href="CPU.html">CPU</a>
+                <a href="GPU.html">GPU</a>
+                <a href="CASE.html">CASE</a>
+                <a href="MAIN BORD.html">MAIN BORD</a>
+                <a href="COMPARE.html">COMPARE</a>
+                <a href="ADMIN.html" class="active admin-badge">ADMIN</a>
+            </nav>
+            <div class="header-actions">
+                <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
+                <a href="#" id="auth-action">admin1234</a>
+            </div>
+        </header>
+
+        <main class="admin-container">
+            <div class="admin-title">
+                <span>🛠️ ระบบจัดการข้อมูลสเปกอุปกรณ์</span>
+            </div>
+
+            <!-- Tab ปุ่มเลือกหมวดหมู่ -->
+            <div class="category-tabs">
+                <button class="tab-btn active" onclick="switchCategory('cpu')">CPU</button>
+                <button class="tab-btn" onclick="switchCategory('gpu')">GPU</button>
+                <button class="tab-btn" onclick="switchCategory('case')">CASE</button>
+                <button class="tab-btn" onclick="switchCategory('mainboard')">MAINBOARD</button>
+            </div>
+
+            <!-- ฟอร์ม เพิ่ม/แก้ไข ข้อมูล -->
+            <form id="adminForm" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="editIndex" value="-1">
+                <div class="form-grid" id="formInputs">
+                    <!-- Dynamic Inputs ตามหมวดหมู่ที่เลือก -->
+                </div>
+            </form>
+
+            <!-- ตารางแสดงรายการข้อมูล -->
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr id="tableHeaders"></tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- เรียกใช้สคริปต์และฐานข้อมูลเดิม -->
+    <script src="theme-toggle.js"></script>
+    <script src="cpu-data.js"></script>
+    <script src="gpu-data.js"></script>
+    <script src="case-data.js"></script>
+    <script src="mainbord-data.js"></script>
+
+    <script>
+        // ระบบความปลอดภัย: อนุญาตเฉพาะ admin1234
+        (function checkAdminAuth() {
+            const user = localStorage.getItem('spechub_user');
+            if (user !== 'admin1234') {
+                alert('คุณไม่มีสิทธิ์เข้าถึงหน้านี้! เฉพาะบัญชี admin1234 เท่านั้น');
+                window.location.href = 'HOME.html';
+            }
+        })();
+
+        let currentCategory = 'cpu';
+
+        // รูปแบบฟิลด์ข้อมูลของแต่ละหมวด
+        const schema = {
+            cpu: [
+                { key: 'name', label: 'ชื่อรุ่น (Model Name)' },
+                { key: 'series', label: 'ซีรีส์ (Series)' },
+                { key: 'socket', label: 'Socket' },
+                { key: 'cores', label: 'Cores / Threads' },
+                { key: 'clock', label: 'Base/Boost Clock' }
+            ],
+            gpu: [
+                { key: 'name', label: 'ชื่อรุ่น (Model Name)' },
+                { key: 'brand', label: 'แบรนด์ (Brand)' },
+                { key: 'memory', label: 'หน่วยความจำ (VRAM)' },
+                { key: 'power', label: 'การใช้พลังงาน (TDP/PSU)' }
+            ],
+            case: [
+                { key: 'name', label: 'ชื่อรุ่น (Model Name)' },
+                { key: 'type', label: 'ประเภทเคส (Form Factor)' },
+                { key: 'motherboard', label: 'รองรับเมนบอร์ด' },
+                { key: 'color', label: 'สี (Color)' }
+            ],
+            mainboard: [
+                { key: 'name', label: 'ชื่อรุ่น (Model Name)' },
+                { key: 'socket', label: 'Socket' },
+                { key: 'chipset', label: 'Chipset' },
+                { key: 'formFactor', label: 'ขนาด (Form Factor)' }
+            ]
+        };
+
+        // สลับหมวดหมู่
+        function switchCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            resetForm();
+            renderFormInputs();
+            renderTable();
+        }
+
+        // แสดงช่องป้อนข้อมูลตามหมวดหมู่
+        function renderFormInputs() {
+            const container = document.getElementById('formInputs');
+            const fields = schema[currentCategory];
+            let html = fields.map(f => `
+                <div class="form-group">
+                    <label>${f.label}</label>
+                    <input type="text" id="field_${f.key}" required placeholder="กรอก${f.label}">
+                </div>
+            `).join('');
+
+            html += `
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit" id="submitBtn">➕ เพิ่มข้อมูล</button>
+                    <button type="button" class="btn-cancel" id="cancelBtn" onclick="resetForm()">ยกเลิก</button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        // โหลดข้อมูลเข้าตาราง
+        function renderTable() {
+            const fields = schema[currentCategory];
+            const data = getDatabase(currentCategory);
+
+            // Render Header
+            const headersHtml = fields.map(f => `<th>${f.label}</th>`).join('') + '<th style="width: 140px;">จัดการ</th>';
+            document.getElementById('tableHeaders').innerHTML = headersHtml;
+
+            // Render Body
+            const bodyHtml = data.map((item, index) => {
+                const rowCells = fields.map(f => `<td>${item[f.key] || '-'}</td>`).join('');
+                return `
+                    <tr>
+                        ${rowCells}
+                        <td>
+                            <button class="btn-edit" onclick="editItem(${index})">แก้ไข</button>
+                            <button class="btn-delete" onclick="deleteItem(${index})">ลบ</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            document.getElementById('tableBody').innerHTML = bodyHtml || '<tr><td colspan="10" style="text-align:center; padding: 20px;">ไม่มีข้อมูล</td></tr>';
+        }
+
+        // ดึงตัวแปร Database ของหมวดที่เลือก
+        function getDatabase(cat) {
+            if (cat === 'cpu') return typeof cpuDatabase !== 'undefined' ? cpuDatabase : [];
+            if (cat === 'gpu') return typeof gpuDatabase !== 'undefined' ? gpuDatabase : [];
+            if (cat === 'case') return typeof caseDatabase !== 'undefined' ? caseDatabase : [];
+            if (cat === 'mainboard') return typeof mainboardDatabase !== 'undefined' ? mainboardDatabase : [];
+            return [];
+        }
+
+        // จัดการ Form Submit (เพิ่ม / แก้ไข)
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const editIndex = parseInt(document.getElementById('editIndex').value);
+            const fields = schema[currentCategory];
+            const db = getDatabase(currentCategory);
+
+            const newItem = {};
+            fields.forEach(f => {
+                newItem[f.key] = document.getElementById(`field_${f.key}`).value.trim();
+            });
+
+            if (editIndex >= 0) {
+                // แก้ไขข้อมูล
+                db[editIndex] = newItem;
+                alert('แก้ไขข้อมูลเรียบร้อยแล้ว!');
+            } else {
+                // เพิ่มข้อมูลใหม่
+                db.push(newItem);
+                alert('เพิ่มข้อมูลสำเร็จ!');
+            }
+
+            resetForm();
+            renderTable();
+        }
+
+        // ปุ่มแก้ไข
+        function editItem(index) {
+            const fields = schema[currentCategory];
+            const db = getDatabase(currentCategory);
+            const item = db[index];
+
+            document.getElementById('editIndex').value = index;
+            fields.forEach(f => {
+                document.getElementById(`field_${f.key}`).value = item[f.key] || '';
+            });
+
+            document.getElementById('submitBtn').textContent = '💾 บันทึกการแก้ไข';
+            document.getElementById('cancelBtn').style.display = 'inline-block';
+        }
+
+        // ปุ่มลบ
+        function deleteItem(index) {
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) {
+                const db = getDatabase(currentCategory);
+                db.splice(index, 1);
+                renderTable();
+            }
+        }
+
+        // ล้างฟอร์ม
+        function resetForm() {
+            document.getElementById('adminForm').reset();
+            document.getElementById('editIndex').value = '-1';
+            const submitBtn = document.getElementById('submitBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            if (submitBtn) submitBtn.textContent = '➕ เพิ่มข้อมูล';
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+        // เริ่มต้นการทำงานเมื่อโหลดหน้าเว็บ
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFormInputs();
+            renderTable();
+        });
+    </script>
+</body>
+</html>

@@ -48,6 +48,7 @@
         nav {
             display: flex;
             gap: 26px;
+            align-items: center;
         }
         nav a {
             text-decoration: none;
@@ -65,6 +66,18 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             font-weight: 700;
+        }
+        /* สไตล์สำหรับปุ่ม ADMIN (หมวดที่ 7) */
+        nav a.admin-link {
+            color: #d97706;
+            font-weight: 700;
+            background: #fef3c7;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        nav a.admin-link:hover {
+            background: #fde68a;
+            color: #b45309;
         }
         .header-actions a {
             color: #fff;
@@ -275,6 +288,8 @@
                 <a href="CASE.html">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
+                <!-- หมวดที่ 7: เพิ่มแท็บ ADMIN (สั่งซ่อนโดยเริ่มต้นด้วย display: none) -->
+                <a href="ADMIN.html" id="adminMenu" class="admin-link" style="display: none;">ADMIN</a>
             </nav>
             <div class="header-actions">
                 <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
@@ -309,21 +324,34 @@
             function updateAuth(){
                 const auth = document.getElementById('auth-action');
                 const user = localStorage.getItem('spechub_user');
-                if(!auth) return;
-                if(user){
-                    auth.textContent = user;
-                    auth.href = '#';
-                    auth.onclick = function(e){ 
-                        e.preventDefault(); 
-                        if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
-                            localStorage.removeItem('spechub_user'); 
-                            window.location = getCurrentPage();
-                        }
-                    };
+                const adminMenu = document.getElementById('adminMenu');
+
+                if (user) {
+                    // ตรวจสอบว่าเป็นบัญชี admin1234 หรือไม่
+                    if (user === 'admin1234' && adminMenu) {
+                        adminMenu.style.display = 'inline-block'; // แสดงเมนูหมวดที่ 7 (ADMIN)
+                    } else if (adminMenu) {
+                        adminMenu.style.display = 'none';
+                    }
+
+                    if (auth) {
+                        auth.textContent = user;
+                        auth.href = '#';
+                        auth.onclick = function(e){ 
+                            e.preventDefault(); 
+                            if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
+                                localStorage.removeItem('spechub_user'); 
+                                window.location = getCurrentPage();
+                            }
+                        };
+                    }
                 } else {
-                    auth.textContent = 'Login';
-                    auth.href = 'login.html';
-                    auth.onclick = null;
+                    if (adminMenu) adminMenu.style.display = 'none';
+                    if (auth) {
+                        auth.textContent = 'Login';
+                        auth.href = 'login.html';
+                        auth.onclick = null;
+                    }
                 }
             }
             updateAuth();
