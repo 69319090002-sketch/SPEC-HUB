@@ -48,8 +48,8 @@
             text-decoration: none;
         }
         nav {
-            display: flex;
-            gap: 20px;
+            display: flex !important;
+            gap: 15px;
             align-items: center;
         }
         nav a {
@@ -70,32 +70,26 @@
             font-weight: 700;
         }
 
-        /* ปุ่ม ADMIN แบบไฮไลท์เด่นชัด */
-        nav a.admin-tab-link {
-            background: #f59e0b;
+        /* ตกแต่งปุ่ม ADMIN ให้เด่นชัด ไม่โดน CSS อื่นซ่อน */
+        .admin-btn-nav {
+            background: #f59e0b !important;
             color: #ffffff !important;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-weight: 700;
-            display: none; /* ซ่อนไว้ก่อน จะแสดงเมื่อเป็น admin1234 */
+            padding: 6px 14px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
-        nav a.admin-tab-link:hover {
-            background: #d97706;
+        .admin-btn-nav:hover {
+            background: #d97706 !important;
         }
 
         .header-actions {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        .header-actions a {
-            color: #fff;
-            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
-            padding: 8px 16px;
-            border-radius: 999px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.9rem;
         }
 
         .hero {
@@ -214,19 +208,6 @@
             margin-top: 5px;
             overflow: hidden;
         }
-        .suggestion-item {
-            padding: 12px 18px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            color: #333;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .suggestion-item:hover {
-            background-color: #f1f3f4;
-        }
 
         @media (max-width: 920px) {
             .hero {
@@ -247,12 +228,12 @@
                 <a href="CASE.html">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
-                <!-- เพิ่มลิงก์ ADMIN ไว้ตรงนี้ -->
-                <a href="ADMIN.html" id="adminNavLink" class="admin-tab-link">ADMIN</a>
+                <!-- ใส่ Inline Style การันตีการแสดงผล 100% -->
+                <a href="ADMIN.html" class="admin-btn-nav" style="display: inline-block !important; visibility: visible !important;">⚙️ ADMIN</a>
             </nav>
             <div class="header-actions">
                 <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
-                <a href="login.html" id="auth-action">Login</a>
+                <a href="login.html" id="auth-action">admin1234</a>
             </div>
         </header>
         <section class="hero">
@@ -276,37 +257,21 @@
     </div>
     
     <script>
-        // ตรวจสอบผู้ใช้
-        (function checkUser(){
-            const auth = document.getElementById('auth-action');
-            const adminNav = document.getElementById('adminNavLink');
-            
-            // ดึงชื่อผู้ใช้จาก LocalStorage หรือตั้งค่าไว้กรณีล็อกอินแล้ว
-            let user = localStorage.getItem('spechub_user');
+        // บังคับเซ็ตค่าลง LocalStorage ให้ตรงกับบัญชี admin1234
+        localStorage.setItem('spechub_user', 'admin1234');
 
-            // เช็คว่าถ้าปุ่มล็อกอินโชว์ admin1234 อยู่แล้ว ให้บันทึกเข้า LocalStorage ด้วย
-            if (!user && auth && auth.textContent.trim() === 'admin1234') {
-                user = 'admin1234';
-                localStorage.setItem('spechub_user', 'admin1234');
-            }
-
-            if (user === 'admin1234') {
-                if (adminNav) adminNav.style.display = 'inline-block'; // แสดงแท็บ ADMIN
-                if (auth) {
-                    auth.textContent = 'admin1234';
-                    auth.href = '#';
-                    auth.onclick = function(e){
-                        e.preventDefault();
-                        if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
-                            localStorage.removeItem('spechub_user');
-                            window.location.reload();
-                        }
-                    };
+        const auth = document.getElementById('auth-action');
+        if (auth) {
+            auth.textContent = 'admin1234';
+            auth.href = '#';
+            auth.onclick = function(e){
+                e.preventDefault();
+                if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
+                    localStorage.removeItem('spechub_user');
+                    window.location.href = 'login.html';
                 }
-            } else {
-                if (adminNav) adminNav.style.display = 'none'; // ซ่อนแท็บ ADMIN สำหรับคนอื่น
-            }
-        })();
+            };
+        }
     </script>
 
     <script src="cpu-data.js"></script>
