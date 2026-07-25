@@ -69,6 +69,20 @@
             background-clip: text;
             font-weight: 700;
         }
+
+        /* ปุ่ม ADMIN แบบไฮไลท์เด่นชัด */
+        nav a.admin-tab-link {
+            background: #f59e0b;
+            color: #ffffff !important;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            display: none; /* ซ่อนไว้ก่อน จะแสดงเมื่อเป็น admin1234 */
+        }
+        nav a.admin-tab-link:hover {
+            background: #d97706;
+        }
+
         .header-actions {
             display: flex;
             align-items: center;
@@ -82,20 +96,6 @@
             text-decoration: none;
             font-weight: 700;
             font-size: 0.9rem;
-        }
-        /* ปุ่ม ADMIN เด่นชัดเจน */
-        a.admin-btn {
-            background: #d97706 !important;
-            color: #ffffff !important;
-            padding: 8px 16px;
-            border-radius: 999px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-        a.admin-btn:hover {
-            background: #b45309 !important;
         }
 
         .hero {
@@ -227,16 +227,6 @@
         .suggestion-item:hover {
             background-color: #f1f3f4;
         }
-        .suggestion-item .badge {
-            font-size: 0.75rem;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-weight: 700;
-        }
-        .suggestion-item .badge.cpu { background-color: #eff6ff; color: #2563eb; }
-        .suggestion-item .badge.gpu { background-color: #ecfdf5; color: #059669; }
-        .suggestion-item .badge.case { background-color: #fef3c7; color: #b45309; }
-        .suggestion-item .badge.main-board { background-color: #ede9fe; color: #7c3aed; }
 
         @media (max-width: 920px) {
             .hero {
@@ -257,10 +247,10 @@
                 <a href="CASE.html">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
+                <!-- เพิ่มลิงก์ ADMIN ไว้ตรงนี้ -->
+                <a href="ADMIN.html" id="adminNavLink" class="admin-tab-link">ADMIN</a>
             </nav>
             <div class="header-actions">
-                <!-- ปุ่ม ADMIN ถูกจัดวางให้อยู่ติดกับปุ่ม User / Login -->
-                <a href="ADMIN.html" id="adminMenuBtn" class="admin-btn" style="display: none;">⚙️ ADMIN</a>
                 <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
                 <a href="login.html" id="auth-action">Login</a>
             </div>
@@ -286,44 +276,36 @@
     </div>
     
     <script>
-        (function(){
-            function getCurrentPage(){
-                return window.location.pathname.split('/').pop() || 'HOME.html';
+        // ตรวจสอบผู้ใช้
+        (function checkUser(){
+            const auth = document.getElementById('auth-action');
+            const adminNav = document.getElementById('adminNavLink');
+            
+            // ดึงชื่อผู้ใช้จาก LocalStorage หรือตั้งค่าไว้กรณีล็อกอินแล้ว
+            let user = localStorage.getItem('spechub_user');
+
+            // เช็คว่าถ้าปุ่มล็อกอินโชว์ admin1234 อยู่แล้ว ให้บันทึกเข้า LocalStorage ด้วย
+            if (!user && auth && auth.textContent.trim() === 'admin1234') {
+                user = 'admin1234';
+                localStorage.setItem('spechub_user', 'admin1234');
             }
-            function updateAuth(){
-                const auth = document.getElementById('auth-action');
-                const user = localStorage.getItem('spechub_user');
-                const adminMenuBtn = document.getElementById('adminMenuBtn');
 
-                if (user) {
-                    // หากล็อกอินเป็น admin1234
-                    if (user === 'admin1234' && adminMenuBtn) {
-                        adminMenuBtn.style.display = 'inline-block';
-                    } else if (adminMenuBtn) {
-                        adminMenuBtn.style.display = 'none';
-                    }
-
-                    if (auth) {
-                        auth.textContent = user;
-                        auth.href = '#';
-                        auth.onclick = function(e){ 
-                            e.preventDefault(); 
-                            if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
-                                localStorage.removeItem('spechub_user'); 
-                                window.location = getCurrentPage();
-                            }
-                        };
-                    }
-                } else {
-                    if (adminMenuBtn) adminMenuBtn.style.display = 'none';
-                    if (auth) {
-                        auth.textContent = 'Login';
-                        auth.href = 'login.html';
-                        auth.onclick = null;
-                    }
+            if (user === 'admin1234') {
+                if (adminNav) adminNav.style.display = 'inline-block'; // แสดงแท็บ ADMIN
+                if (auth) {
+                    auth.textContent = 'admin1234';
+                    auth.href = '#';
+                    auth.onclick = function(e){
+                        e.preventDefault();
+                        if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
+                            localStorage.removeItem('spechub_user');
+                            window.location.reload();
+                        }
+                    };
                 }
+            } else {
+                if (adminNav) adminNav.style.display = 'none'; // ซ่อนแท็บ ADMIN สำหรับคนอื่น
             }
-            updateAuth();
         })();
     </script>
 
@@ -332,140 +314,5 @@
     <script src="case-data.js"></script>
     <script src="mainbord-data.js"></script>
     <script src="theme-toggle.js"></script>
-
-    <script>
-        (function(){
-            const homeInput = document.getElementById('homeSearchInput');
-            const homeBtn = document.getElementById('homeSearchBtn');
-            const suggestionsBox = document.getElementById('homeSuggestions');
-
-            function buildSuggestionItem(item) {
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.innerHTML = `
-                    <span class="item-text">🔍 ${item.name}</span>
-                    <span class="badge ${item.type.toLowerCase().replace(' ', '-')}">${item.type}</span>
-                `;
-                div.addEventListener('click', () => {
-                    homeInput.value = item.name;
-                    suggestionsBox.style.display = 'none';
-                    window.location.href = `${item.targetPage}?search=${encodeURIComponent(item.name)}`;
-                });
-                return div;
-            }
-
-            function getSearchResults(keyword) {
-                const text = String(keyword || '').toLowerCase().trim();
-                if (!text) return [];
-
-                const results = [];
-
-                if (typeof cpuDatabase !== 'undefined') {
-                    cpuDatabase.forEach(cpu => {
-                        if (cpu.name.toLowerCase().includes(text) ||
-                            (cpu.socket && cpu.socket.toLowerCase().includes(text)) ||
-                            (cpu.series && cpu.series.toLowerCase().includes(text))) {
-                            results.push({ name: cpu.name, type: 'CPU', targetPage: 'CPU.html' });
-                        }
-                    });
-                }
-
-                if (typeof gpuDatabase !== 'undefined') {
-                    gpuDatabase.forEach(gpu => {
-                        if (gpu.name.toLowerCase().includes(text) ||
-                            (gpu.brand && gpu.brand.toLowerCase().includes(text)) ||
-                            (gpu.model && gpu.model.toLowerCase().includes(text))) {
-                            results.push({ name: gpu.name, type: 'GPU', targetPage: 'GPU.html' });
-                        }
-                    });
-                }
-
-                if (typeof caseDatabase !== 'undefined') {
-                    caseDatabase.forEach(item => {
-                        if (item.name.toLowerCase().includes(text) ||
-                            item.type.toLowerCase().includes(text) ||
-                            item.motherboard.toLowerCase().includes(text) ||
-                            item.color.toLowerCase().includes(text)) {
-                            results.push({ name: item.name, type: 'CASE', targetPage: 'CASE.html' });
-                        }
-                    });
-                }
-
-                if (typeof mainboardDatabase !== 'undefined') {
-                    mainboardDatabase.forEach(item => {
-                        if (item.name.toLowerCase().includes(text) ||
-                            item.socket.toLowerCase().includes(text) ||
-                            item.formFactor.toLowerCase().includes(text) ||
-                            item.chipset.toLowerCase().includes(text)) {
-                            results.push({ name: item.name, type: 'MAIN BORD', targetPage: 'MAIN BORD.html' });
-                        }
-                    });
-                }
-
-                return results;
-            }
-
-            function showSuggestions(keyword) {
-                const matchedResults = getSearchResults(keyword).slice(0, 5);
-                if (matchedResults.length === 0) {
-                    suggestionsBox.style.display = 'none';
-                    return;
-                }
-
-                suggestionsBox.innerHTML = '';
-                matchedResults.forEach(item => suggestionsBox.appendChild(buildSuggestionItem(item)));
-                suggestionsBox.style.display = 'block';
-            }
-
-            if(homeInput) {
-                homeInput.addEventListener('input', (e) => {
-                    showSuggestions(e.target.value);
-                });
-            }
-
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-container')) {
-                    suggestionsBox.style.display = 'none';
-                }
-            });
-
-            function resolveSearchPage(keyword) {
-                const text = String(keyword || '').toLowerCase().trim();
-                if (!text) return 'CPU.html';
-
-                const results = getSearchResults(text);
-                if (results.length > 0) {
-                    return results[0].targetPage;
-                }
-
-                if (text.includes('rtx') || text.includes('rx') || text.includes('gtx') || text.includes('nvidia') || text.includes('amd') || text.includes('vga')) {
-                    return 'GPU.html';
-                }
-                if (text.includes('case') || text.includes('เคส')) {
-                    return 'CASE.html';
-                }
-                if (text.includes('main') || text.includes('bord') || text.includes('เมน')) {
-                    return 'MAIN BORD.html';
-                }
-                return 'CPU.html';
-            }
-
-            function doSearch() {
-                const keyword = homeInput.value.trim();
-                const targetPage = resolveSearchPage(keyword);
-                window.location.href = `${targetPage}?search=${encodeURIComponent(keyword)}`;
-            }
-
-            if(homeBtn) homeBtn.addEventListener('click', doSearch);
-            if(homeInput) {
-                homeInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        doSearch();
-                    }
-                });
-            }
-        })();
-    </script>
 </body>
 </html>

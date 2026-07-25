@@ -30,6 +30,8 @@
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.12);
             margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         .brand {
             font-size: 1.5rem;
@@ -41,7 +43,7 @@
             background-clip: text;
             text-decoration: none;
         }
-        nav { display: flex; gap: 26px; align-items: center; }
+        nav { display: flex; gap: 20px; align-items: center; }
         nav a {
             text-decoration: none; color: #222; font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease;
         }
@@ -55,6 +57,12 @@
         }
         .admin-badge {
             background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 6px; font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         /* Admin Container */
@@ -83,6 +91,7 @@
             margin-bottom: 24px;
             border-bottom: 2px solid #e5e7eb;
             padding-bottom: 10px;
+            flex-wrap: wrap;
         }
         .tab-btn {
             padding: 8px 18px;
@@ -180,10 +189,10 @@
 
             <!-- Tab ปุ่มเลือกหมวดหมู่ -->
             <div class="category-tabs">
-                <button class="tab-btn active" onclick="switchCategory('cpu')">CPU</button>
-                <button class="tab-btn" onclick="switchCategory('gpu')">GPU</button>
-                <button class="tab-btn" onclick="switchCategory('case')">CASE</button>
-                <button class="tab-btn" onclick="switchCategory('mainboard')">MAINBOARD</button>
+                <button class="tab-btn active" onclick="switchCategory(event, 'cpu')">CPU</button>
+                <button class="tab-btn" onclick="switchCategory(event, 'gpu')">GPU</button>
+                <button class="tab-btn" onclick="switchCategory(event, 'case')">CASE</button>
+                <button class="tab-btn" onclick="switchCategory(event, 'mainboard')">MAINBOARD</button>
             </div>
 
             <!-- ฟอร์ม เพิ่ม/แก้ไข ข้อมูล -->
@@ -223,6 +232,15 @@
             }
         })();
 
+        // ระบบ Logout เมื่อกดชื่อ admin1234
+        document.getElementById('auth-action').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) {
+                localStorage.removeItem('spechub_user');
+                window.location.href = 'HOME.html';
+            }
+        });
+
         let currentCategory = 'cpu';
 
         // รูปแบบฟิลด์ข้อมูลของแต่ละหมวด
@@ -255,10 +273,10 @@
         };
 
         // สลับหมวดหมู่
-        function switchCategory(category) {
+        function switchCategory(evt, category) {
             currentCategory = category;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (evt && evt.target) evt.target.classList.add('active');
             resetForm();
             renderFormInputs();
             renderTable();
@@ -282,6 +300,23 @@
                 </div>
             `;
             container.innerHTML = html;
+        }
+
+        // ดึงตัวแปร Database ของหมวดที่เลือก (รองรับ LocalStorage)
+        function getDatabase(cat) {
+            const storedData = localStorage.getItem(`spechub_${cat}_data`);
+            if (storedData) return JSON.parse(storedData);
+
+            if (cat === 'cpu') return typeof cpuDatabase !== 'undefined' ? cpuDatabase : [];
+            if (cat === 'gpu') return typeof gpuDatabase !== 'undefined' ? gpuDatabase : [];
+            if (cat === 'case') return typeof caseDatabase !== 'undefined' ? caseDatabase : [];
+            if (cat === 'mainboard') return typeof mainboardDatabase !== 'undefined' ? mainboardDatabase : [];
+            return [];
+        }
+
+        // บันทึกลง LocalStorage
+        function saveDatabase(cat, data) {
+            localStorage.setItem(`spechub_${cat}_data`, JSON.stringify(data));
         }
 
         // โหลดข้อมูลเข้าตาราง
@@ -309,15 +344,6 @@
             document.getElementById('tableBody').innerHTML = bodyHtml || '<tr><td colspan="10" style="text-align:center; padding: 20px;">ไม่มีข้อมูล</td></tr>';
         }
 
-        // ดึงตัวแปร Database ของหมวดที่เลือก
-        function getDatabase(cat) {
-            if (cat === 'cpu') return typeof cpuDatabase !== 'undefined' ? cpuDatabase : [];
-            if (cat === 'gpu') return typeof gpuDatabase !== 'undefined' ? gpuDatabase : [];
-            if (cat === 'case') return typeof caseDatabase !== 'undefined' ? caseDatabase : [];
-            if (cat === 'mainboard') return typeof mainboardDatabase !== 'undefined' ? mainboardDatabase : [];
-            return [];
-        }
-
         // จัดการ Form Submit (เพิ่ม / แก้ไข)
         function handleFormSubmit(e) {
             e.preventDefault();
@@ -331,15 +357,14 @@
             });
 
             if (editIndex >= 0) {
-                // แก้ไขข้อมูล
                 db[editIndex] = newItem;
                 alert('แก้ไขข้อมูลเรียบร้อยแล้ว!');
             } else {
-                // เพิ่มข้อมูลใหม่
                 db.push(newItem);
                 alert('เพิ่มข้อมูลสำเร็จ!');
             }
 
+            saveDatabase(currentCategory, db);
             resetForm();
             renderTable();
         }
@@ -364,6 +389,7 @@
             if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) {
                 const db = getDatabase(currentCategory);
                 db.splice(index, 1);
+                saveDatabase(currentCategory, db);
                 renderTable();
             }
         }
