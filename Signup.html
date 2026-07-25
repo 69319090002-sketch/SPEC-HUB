@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>SPEC HUB - Signup</title>
+    <link rel="stylesheet" href="theme-style.css">
+    <style>
+        body{font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;background:#f2f2f2;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+        .box{background:#fff;padding:28px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.08);width:400px}
+        .box a{color:#2563eb;text-decoration:none;font-weight:700}
+        h2{margin-bottom:14px;color:#0f2a4c}
+        label{display:block;margin:10px 0 6px;color:#444;font-size:0.95rem}
+        input{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:1rem;color:#111;background:#fff}
+        input::placeholder{color:#6b7280;opacity:1}
+        button{margin-top:14px;width:100%;padding:10px;border-radius:8px;border:none;background:#0f172a;color:#fff;font-weight:700;cursor:pointer}
+        .note{margin-top:14px;font-size:0.9rem;color:#666;text-align:center}
+        .error{margin-top:10px;color:#b91c1c;font-size:0.95rem;text-align:center}
+        body.dark-theme{background:#050816;color:#e2e8f0}
+        body.dark-theme .box{background:rgba(15,23,42,0.96);box-shadow:0 20px 45px rgba(0,0,0,0.35)}
+        body.dark-theme h2{color:#f8fafc}
+        body.dark-theme label{color:#cbd5e1}
+        body.dark-theme input{background:rgba(15,23,42,0.92);border:1px solid rgba(148,163,184,0.22);color:#e2e8f0}
+        body.dark-theme input::placeholder{color:rgba(226,232,240,0.65)}
+        body.dark-theme button{background:#2563eb}
+        body.dark-theme .note{color:#94a3b8}
+    </style>
+</head>
+<body>
+    <script>
+        (function(){
+            const storedTheme = localStorage.getItem('spechub_theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : (prefersDark ? 'dark' : 'light');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+        })();
+    </script>
+    <div class="box">
+        <h2>สมัครสมาชิก</h2>
+        <form id="signupForm">
+            <label for="newUsername">Username</label>
+            <input id="newUsername" name="newUsername" placeholder="ตัวอย่าง: user123" required>
+            <label for="newEmail">Email</label>
+            <input id="newEmail" name="newEmail" type="email" placeholder="example@mail.com" required>
+            <label for="newPassword">Password</label>
+            <input id="newPassword" name="newPassword" type="password" placeholder="รหัสผ่าน" required>
+            <label for="confirmPassword">Confirm Password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="ยืนยันรหัสผ่าน" required>
+            <button type="submit">สมัครสมาชิก</button>
+        </form>
+        <div class="error" id="signupError" style="display:none;"></div>
+        <div class="note">มีบัญชีแล้ว? <a href="Login.html">เข้าสู่ระบบ</a></div>
+    </div>
+    <script>
+        function showError(message) {
+            const errorEl = document.getElementById('signupError');
+            if (!errorEl) return;
+            errorEl.textContent = message;
+            errorEl.style.display = message ? 'block' : 'none';
+        }
+
+        document.getElementById('signupForm').addEventListener('submit', async function(e){
+            e.preventDefault();
+            showError('');
+            const username = document.getElementById('newUsername').value.trim();
+            const email = document.getElementById('newEmail').value.trim().toLowerCase();
+            const password = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (password !== confirmPassword) {
+                showError('รหัสผ่านและยืนยันรหัสผ่านต้องเหมือนกัน');
+                return;
+            }
+            if (password.length < 6) {
+                showError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+                return;
+            }
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    showError(data.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก');
+                    return;
+                }
+                localStorage.setItem('spechub_user', username);
+                alert('สมัครสมาชิกเรียบร้อยแล้ว! เข้าสู่ระบบด้วยบัญชีใหม่เรียบร้อย');
+                window.location = 'HOME.html';
+            } catch (error) {
+                showError('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ โปรดตรวจสอบว่า backend ทำงานอยู่');
+            }
+        });
+    </script>
+</body>
+</html>

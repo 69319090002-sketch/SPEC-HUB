@@ -1,0 +1,27 @@
+// mainbord-data.js
+const mainboardDatabase = [
+    { name: "ASUS ROG STRIX B850-E", socket: "AM5", formFactor: "ATX", chipset: "B850", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "14x USB 3.2", image: "assets/ASUS.png" },
+    { name: "MSI MPG B850 EDGE", socket: "AM5", formFactor: "ATX", chipset: "B850", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "12x USB 3.2", image: "assets/MSI.png" },
+    { name: "Gigabyte B850 AORUS", socket: "AM5", formFactor: "ATX", chipset: "B850", memorySlots: "4 x DIMM DDR5", m2Slots: "3 x M.2", usbPorts: "16x USB 3.2", image: "assets/GIGABYTE.png" },
+    { name: "ASUS TUF GAMING B650-PLUS", socket: "AM5", formFactor: "ATX", chipset: "B650", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "10x USB 3.2", image: "assets/ASUS.png" },
+    { name: "MSI PRO B650M-A", socket: "AM5", formFactor: "Micro-ATX", chipset: "B650", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "8x USB 3.2", image: "assets/MSI.png" },
+    { name: "Gigabyte X670E AORUS MASTER", socket: "AM5", formFactor: "ATX", chipset: "X670E", memorySlots: "4 x DIMM DDR5", m2Slots: "5 x M.2", usbPorts: "14x USB 3.2", image: "assets/GIGABYTE.png" },
+    { name: "ASUS PRIME X670-P", socket: "AM5", formFactor: "ATX", chipset: "X670", memorySlots: "4 x DIMM DDR5", m2Slots: "4 x M.2", usbPorts: "12x USB 3.2", image: "assets/ASUS.png" },
+    { name: "MSI MAG X670E TOMAHawk WiFi", socket: "AM5", formFactor: "ATX", chipset: "X670E", memorySlots: "4 x DIMM DDR5", m2Slots: "4 x M.2", usbPorts: "14x USB 3.2", image: "assets/MSI.png" },
+    { name: "ASRock B650M Steel Legend", socket: "AM5", formFactor: "Micro-ATX", chipset: "B650", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "8x USB 3.2", image: "assets/ASRock.png" },
+    { name: "Gigabyte B650 AORUS ELITE AX", socket: "AM5", formFactor: "ATX", chipset: "B650", memorySlots: "4 x DIMM DDR5", m2Slots: "3 x M.2", usbPorts: "10x USB 3.2", image: "assets/GIGABYTE.png" },
+    { name: "ASUS ROG CROSSHAIR X670E HERO", socket: "AM5", formFactor: "ATX", chipset: "X670E", memorySlots: "4 x DIMM DDR5", m2Slots: "5 x M.2", usbPorts: "16x USB 3.2", image: "assets/ASUS.png" },
+    { name: "MSI MEG X670E GODLIKE", socket: "AM5", formFactor: "E-ATX", chipset: "X670E", memorySlots: "4 x DIMM DDR5", m2Slots: "5 x M.2", usbPorts: "18x USB 3.2", image: "assets/MSI.png" },
+    { name: "Gigabyte X670E AORUS MASTER", socket: "AM5", formFactor: "ATX", chipset: "X670E", memorySlots: "4 x DIMM DDR5", m2Slots: "4 x M.2", usbPorts: "14x USB 3.2", image: "assets/GIGABYTE.png" },
+    { name: "ASRock B650E Steel Legend", socket: "AM5", formFactor: "ATX", chipset: "B650E", memorySlots: "4 x DIMM DDR5", m2Slots: "3 x M.2", usbPorts: "12x USB 3.2", image: "assets/ASRock.png" },
+    { name: "Gigabyte X670 AORUS ELITE", socket: "AM5", formFactor: "ATX", chipset: "X670", memorySlots: "4 x DIMM DDR5", m2Slots: "4 x M.2", usbPorts: "14x USB 3.2", image: "assets/GIGABYTE.png" },
+    { name: "ASUS PRIME B650M-A WIFI", socket: "AM5", formFactor: "Micro-ATX", chipset: "B650", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "8x USB 3.2", image: "assets/ASUS.png" },
+    { name: "MSI MAG B650M MORTAR WIFI", socket: "AM5", formFactor: "Micro-ATX", chipset: "B650", memorySlots: "4 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "8x USB 3.2", image: "assets/MSI.png" },
+    { name: "ASUS ROG STRIX B650-F", socket: "AM5", formFactor: "ATX", chipset: "B650", memorySlots: "4 x DIMM DDR5", m2Slots: "3 x M.2", usbPorts: "12x USB 3.2", image: "assets/ASUS.png" },
+    { name: "MSI PRO X670-P WIFI", socket: "AM5", formFactor: "ATX", chipset: "X670", memorySlots: "4 x DIMM DDR5", m2Slots: "3 x M.2", usbPorts: "10x USB 3.2", image: "assets/MSI.png" },
+    { name: "ASRock B650 PG Riptide", socket: "AM5", formFactor: "ATX", chipset: "B650", memorySlots: "4 x DIMM DDR5", m2Slots: "3 x M.2", usbPorts: "12x USB 3.2", image: "assets/ASRock.png" },
+    { name: "Gigabyte X670E AORUS XTREME", socket: "AM5", formFactor: "E-ATX", chipset: "X670E", memorySlots: "4 x DIMM DDR5", m2Slots: "6 x M.2", usbPorts: "18x USB 3.2", image: "assets/GIGABYTE.png" },
+    { name: "ASUS PRIME X670-P WIFI", socket: "AM5", formFactor: "ATX", chipset: "X670", memorySlots: "4 x DIMM DDR5", m2Slots: "4 x M.2", usbPorts: "12x USB 3.2", image: "assets/ASUS.png" },
+    { name: "MSI MEG B650I UNIFY", socket: "AM5", formFactor: "Mini-ITX", chipset: "B650", memorySlots: "2 x DIMM DDR5", m2Slots: "2 x M.2", usbPorts: "8x USB 3.2", image: "assets/MSI.png" },
+    { name: "ASRock X670E Aqua PCIE4", socket: "AM5", formFactor: "ATX", chipset: "X670E", memorySlots: "4 x DIMM DDR5", m2Slots: "5 x M.2", usbPorts: "16x USB 3.2", image: "assets/ASRock.png" }
+];
