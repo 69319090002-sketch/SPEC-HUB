@@ -70,20 +70,30 @@
             font-weight: 700;
         }
 
-        /* ตกแต่งปุ่ม ADMIN ให้เด่นชัด ไม่โดน CSS อื่นซ่อน */
+        /* ปรับสไตล์ปุ่ม ADMIN ให้สอดคล้องกับเมนู */
         .admin-btn-nav {
-            background: #f59e0b !important;
-            color: #ffffff !important;
-            padding: 6px 14px !important;
-            border-radius: 8px !important;
+            background: none !important;
+            color: inherit !important;
+            padding: 0 !important;
+            border-radius: 6px !important;
             font-weight: 700 !important;
             text-decoration: none !important;
             display: inline-block !important;
             visibility: visible !important;
             opacity: 1 !important;
         }
-        .admin-btn-nav:hover {
-            background: #d97706 !important;
+
+        /* ปุ่มในมุมขวา (Login / username) ให้เป็นปุ่มสีน้ำเงินเหมือนหน้าอื่น */
+        .header-actions a {
+            color: #fff;
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            padding: 10px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .header-actions a:hover {
+            opacity: 0.95;
         }
 
         .header-actions {
@@ -228,12 +238,11 @@
                 <a href="CASE.html">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
-                <!-- ใส่ Inline Style การันตีการแสดงผล 100% -->
-                <a href="ADMIN.html" class="admin-btn-nav" style="display: inline-block !important; visibility: visible !important;">⚙️ ADMIN</a>
+                <a href="ADMIN.html" class="admin-btn-nav" style="display:none; visibility:hidden;">⚙️ ADMIN</a>
             </nav>
             <div class="header-actions">
                 <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
-                <a href="login.html" id="auth-action">admin1234</a>
+                <a href="login.html" id="auth-action">Login</a>
             </div>
         </header>
         <section class="hero">
@@ -257,24 +266,43 @@
     </div>
     
     <script>
-        const auth = document.getElementById('auth-action');
-        const currentUser = localStorage.getItem('spechub_user');
-        if (auth) {
-            if (currentUser) {
-                auth.textContent = currentUser;
-                auth.href = '#';
-                auth.onclick = function(e){
-                    e.preventDefault();
-                    if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
-                        localStorage.removeItem('spechub_user');
-                        window.location.href = 'login.html';
-                    }
-                };
-            } else {
-                auth.textContent = 'Login';
-                auth.href = 'login.html';
+        (function(){
+            function getCurrentPage(){
+                return window.location.pathname.split('/').pop() || 'HOME.html';
             }
-        }
+            function updateAuth(){
+                const auth = document.getElementById('auth-action');
+                const adminLink = document.querySelector('.admin-btn-nav');
+                const user = localStorage.getItem('spechub_user');
+                if(!auth) return;
+                if(user){
+                    auth.textContent = user;
+                    auth.href = '#';
+                    auth.onclick = function(e){
+                        e.preventDefault();
+                        if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
+                            localStorage.removeItem('spechub_user');
+                            window.location = getCurrentPage();
+                        }
+                    };
+                    if(adminLink){
+                        if(user === 'admin1234'){
+                            adminLink.style.display = 'inline-block';
+                            adminLink.style.visibility = 'visible';
+                        } else {
+                            adminLink.style.display = 'none';
+                            adminLink.style.visibility = 'hidden';
+                        }
+                    }
+                } else {
+                    auth.textContent = 'Login';
+                    auth.href = 'login.html';
+                    auth.onclick = null;
+                    if(adminLink){ adminLink.style.display = 'none'; adminLink.style.visibility = 'hidden'; }
+                }
+            }
+            updateAuth();
+        })();
     </script>
 
     <script src="data-store.js"></script>

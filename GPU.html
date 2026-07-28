@@ -249,6 +249,7 @@
                 <a href="CASE.html">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
+                <a href="ADMIN.html" class="admin-btn-nav" style="display:none; visibility:hidden;">⚙️ ADMIN</a>
             </nav>
             <div class="header-actions">
                 <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
@@ -277,24 +278,35 @@
             function getCurrentPage() {
                 return window.location.pathname.split('/').pop() || 'HOME.html';
             }
-            function updateAuth() {
+            function updateAuth(){
                 const auth = document.getElementById('auth-action');
+                const adminLink = document.querySelector('.admin-btn-nav');
                 const user = localStorage.getItem('spechub_user');
-                if (!auth) return;
-                if (user) {
+                if(!auth) return;
+                if(user){
                     auth.textContent = user;
                     auth.href = '#';
-                    auth.onclick = function (e) {
-                        e.preventDefault();
-                        if (confirm('ต้องการออกจากระบบหรือไม่?')) {
-                            localStorage.removeItem('spechub_user');
+                    auth.onclick = function(e){ 
+                        e.preventDefault(); 
+                        if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
+                            localStorage.removeItem('spechub_user'); 
                             window.location = getCurrentPage();
                         }
                     };
+                    if(adminLink){
+                        if(user === 'admin1234'){
+                            adminLink.style.display = 'inline-block';
+                            adminLink.style.visibility = 'visible';
+                        } else {
+                            adminLink.style.display = 'none';
+                            adminLink.style.visibility = 'hidden';
+                        }
+                    }
                 } else {
                     auth.textContent = 'Login';
                     auth.href = 'login.html';
                     auth.onclick = null;
+                    if(adminLink){ adminLink.style.display = 'none'; adminLink.style.visibility = 'hidden'; }
                 }
             }
             updateAuth();

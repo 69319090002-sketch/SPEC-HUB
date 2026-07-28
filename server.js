@@ -1,116 +1,101 @@
 const express = require('express');
-const path = require('path');
-const bodyParser = require('body-parser');
-const cors = require('cors'); // เพิ่ม CORS เพื่อให้ข้ามโดเมนจาก Netlify ได้
 const { Pool } = require('pg');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 
-// รองรับ PORT จาก Render (ถ้าไม่มีให้ใช้ 3000 สำหรับ local)
-const PORT = process.env.PORT || 3000;
+// อนุญาตให้หน้าเว็บจากทุกโดเมน (รวมถึง Netlify) เรียกใช้งาน API ได้
+app.use(cors({
+    origin: '*', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+}));
 
-// อนุญาตให้หน้าเว็บจากโดเมนอื่น (เช่น Netlify) ส่ง Request เข้ามาได้
-app.use(cors());
+app.use(express.json());
 
-// ตั้งค่าเชื่อมต่อไปยัง Neon PostgreSQL
+// เชื่อมต่อ Neon Database ผ่าน DATABASE_URL
 const pool = new Pool({
-  connectionString: 'postgresql://neondb_owner:npg_ndLt5ms7japS@ep-lively-art-azybrbkd-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
 });
 
-// ฟังก์ชันสร้างตาราง users อัตโนมัติใน Neon (กรณีที่ยังไม่มีตาราง)
-async function initDb() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(255) UNIQUE NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    console.log('Database initialized successfully.');
-  } catch (err) {
-    console.error('Error initializing database:', err);
-  }
-}
-initDb();
+// ตรวจสอบการเชื่อมต่อ Neon
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('❌ ไม่สามารถเชื่อมต่อกับ Neon Database ได้:', err.message);
+    } else {
+        console.log('✅ เชื่อมต่อกับ Neon Database บน Cloud เรียบร้อยแล้ว!');
+        release();
+    }
+});
 
-app.use(express.static(path.join(__dirname)));
-app.use(bodyParser.json());
+// ==========================================
+// API ROUTES
+// ==========================================
 
-// API ดึงรายชื่อผู้ใช้ทั้งหมด
+// หน้าแรกเช็กสถานะการทำงานของ Backend
+app.get('/', (req, res) => {
+    res.send('🚀 SPEC HUB Backend Server is Running Online!');
+});
+
+// 1. READ: ดึงข้อมูลผู้ใช้ทั้งหมดจาก Neon
 app.get('/api/users', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT username, email FROM users');
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ message: 'Database error', error: err.message });
-  }
+    try {
+        const result = await pool.query('SELECT id, username, email, password, created_at FROM users ORDER BY id ASC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching users:', err.message);
+        res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลผู้ใช้จาก Neon ได้: ' + err.message });
+    }
 });
 
-// API สมัครสมาชิก (Signup)
-app.post('/api/signup', async (req, res) => {
-  const { username, email, password } = req.body;
+// 2. UPDATE: แก้ไขรหัสผ่าน
+app.put('/api/users/:id/password', async (req, res) => {
+    const { id } = req.params;
+    const { newPassword } = req.body;
 
-  if (!username || !email || !password) {
-    return res.status(400).json({ message: 'Missing required fields' });
-  }
-
-  try {
-    // เช็กว่า username หรือ email ซ้ำหรือไม่
-    const userCheck = await pool.query(
-      'SELECT * FROM users WHERE username = $1 OR email = $2',
-      [username, email]
-    );
-
-    if (userCheck.rows.length > 0) {
-      const existingUser = userCheck.rows[0];
-      if (existingUser.username === username) {
-        return res.status(409).json({ message: 'Username already exists' });
-      }
-      if (existingUser.email === email) {
-        return res.status(409).json({ message: 'Email already exists' });
-      }
+    if (!newPassword || newPassword.trim() === '') {
+        return res.status(400).json({ error: 'กรุณากรอกรหัสผ่านใหม่' });
     }
 
-    // บันทึกข้อมูลลงตาราง users ใน Neon
-    await pool.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3)',
-      [username, email, password]
-    );
+    try {
+        const result = await pool.query(
+            'UPDATE users SET password = $1 WHERE id = $2 RETURNING id, username',
+            [newPassword.trim(), id]
+        );
 
-    res.status(201).json({ message: 'User created' });
-  } catch (err) {
-    res.status(500).json({ message: 'Database error', error: err.message });
-  }
-});
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'ไม่พบบัญชีผู้ใช้นี้ในระบบ' });
+        }
 
-// API เข้าสู่ระบบ (Login)
-app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).json({ message: 'Missing required fields' });
-  }
-
-  try {
-    // ค้นหาผู้ใช้ตาม username และ password
-    const result = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND password = $2',
-      [username, password]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+        res.json({ message: `แก้ไขรหัสผ่านของบัญชี "${result.rows[0].username}" เรียบร้อยแล้ว!` });
+    } catch (err) {
+        console.error('Error updating password:', err.message);
+        res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตรหัสผ่านลง Neon' });
     }
-
-    res.json({ message: 'Login successful', username: result.rows[0].username });
-  } catch (err) {
-    res.status(500).json({ message: 'Database error', error: err.message });
-  }
 });
 
+// 3. DELETE: ลบบัญชีผู้ใช้
+app.delete('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING username', [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'ไม่พบบัญชีผู้ใช้นี้ในระบบ' });
+        }
+
+        res.json({ message: `ลบบัญชี "${result.rows[0].username}" ออกจาก Neon เรียบร้อยแล้ว!` });
+    } catch (err) {
+        console.error('Error deleting user:', err.message);
+        res.status(500).json({ error: 'เกิดข้อผิดพลาดในการลบบัญชีผู้ใช้' });
+    }
+});
+
+// กำหนด Port รองรับการ Deploy บน Cloud
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`🚀 SPEC HUB Server พร้อมทำงานแล้วที่ Port ${PORT}`);
 });
