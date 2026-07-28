@@ -70,17 +70,9 @@
             font-weight: 700;
         }
 
-        /* ปรับสไตล์ปุ่ม ADMIN ให้สอดคล้องกับเมนู */
-        .admin-btn-nav {
-            background: none !important;
-            color: inherit !important;
-            padding: 0 !important;
-            border-radius: 6px !important;
-            font-weight: 700 !important;
-            text-decoration: none !important;
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
+        /* CSS สำหรับซ่อน Element เฉพาะ Admin เป็นค่าเริ่มต้น */
+        .admin-only {
+            display: none !important;
         }
 
         /* ปุ่มในมุมขวา (Login / username) ให้เป็นปุ่มสีน้ำเงินเหมือนหน้าอื่น */
@@ -238,7 +230,9 @@
                 <a href="CASE.html">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
-                <a href="ADMIN.html" class="admin-btn-nav" style="display:none; visibility:hidden;">⚙️ ADMIN</a>
+                <!-- ปุ่มเฉพาะ Admin -->
+                <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
+                <a href="ADD_PRODUCT.html" class="add-data-btn-nav admin-only">➕ ADD DATA</a>
             </nav>
             <div class="header-actions">
                 <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
@@ -272,9 +266,11 @@
             }
             function updateAuth(){
                 const auth = document.getElementById('auth-action');
-                const adminLink = document.querySelector('.admin-btn-nav');
+                const adminElements = document.querySelectorAll('.admin-only');
                 const user = localStorage.getItem('spechub_user');
+                
                 if(!auth) return;
+                
                 if(user){
                     auth.textContent = user;
                     auth.href = '#';
@@ -285,20 +281,26 @@
                             window.location = getCurrentPage();
                         }
                     };
-                    if(adminLink){
-                        if(user === 'admin1234'){
-                            adminLink.style.display = 'inline-block';
-                            adminLink.style.visibility = 'visible';
-                        } else {
-                            adminLink.style.display = 'none';
-                            adminLink.style.visibility = 'hidden';
-                        }
+                    
+                    if(user === 'admin1234'){
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'inline-block', 'important');
+                            el.style.visibility = 'visible';
+                        });
+                    } else {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'none', 'important');
+                            el.style.visibility = 'hidden';
+                        });
                     }
                 } else {
                     auth.textContent = 'Login';
                     auth.href = 'login.html';
                     auth.onclick = null;
-                    if(adminLink){ adminLink.style.display = 'none'; adminLink.style.visibility = 'hidden'; }
+                    adminElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.visibility = 'hidden';
+                    });
                 }
             }
             updateAuth();

@@ -48,6 +48,7 @@
         nav {
             display: flex;
             gap: 24px;
+            align-items: center;
         }
         nav a {
             text-decoration: none;
@@ -66,6 +67,11 @@
             background-clip: text;
             font-weight: 700;
         }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
         .header-actions a {
             color: #fff;
             background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
@@ -73,6 +79,10 @@
             border-radius: 999px;
             text-decoration: none;
             font-weight: 700;
+        }
+        /* CSS สำหรับซ่อน Element เฉพาะ Admin เป็นค่าเริ่มต้น */
+        .admin-only {
+            display: none !important;
         }
         .hero {
             width: 100%;
@@ -281,31 +291,11 @@
         body.dark-theme .suggestion-item:hover {
             background: rgba(148,163,184,0.12);
         }
-        .compare-tools input {
-            width: 100%;
-        }
         .side-title,
         .tool-group label {
             font-size: 0.95rem;
             font-weight: 700;
             color: #0f2a4c;
-        }
-        .compare-tools select,
-        .compare-tools input {
-            padding: 10px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            background: #fff;
-            color: #111;
-            cursor: pointer;
-        }
-        .compare-tools input::placeholder {
-            color: #64748b;
-            opacity: 1;
-        }
-        .compare-tools input {
-            width: 100%;
         }
         .compare-cards {
             display: grid;
@@ -381,118 +371,6 @@
             font-size: 0.95rem;
             text-align: center;
         }
-        @media (max-width: 980px) {
-            .compare-cards {
-                grid-template-columns: 1fr;
-            }
-            .compare-tools {
-                flex-direction: column;
-            }
-            .compare-tools select,
-            .compare-tools input {
-                width: 100%;
-            }
-        }
-        @media (max-width: 740px) {
-            header {
-                flex-direction: column;
-                gap: 12px;
-                align-items: flex-start;
-            }
-            .hero {
-                padding: 22px;
-            }
-            .compare-title h1 {
-                font-size: 1.8rem;
-            }
-            .compare-card .card-image {
-                min-height: 160px;
-            }
-        }
-        body.dark-theme .compare-card {
-            background: rgba(15,23,42,0.92);
-            border-color: rgba(148,163,184,0.16);
-        }
-        body.dark-theme .compare-card .card-image {
-            background: #111827;
-        }
-        body.dark-theme .compare-card .product-name,
-        body.dark-theme .compare-card .spec-table td,
-        body.dark-theme .compare-card .placeholder-text {
-            color: #e2e8f0;
-        }
-        body.dark-theme .compare-card .spec-table td:first-child {
-            color: #94a3b8;
-        }
-        body.dark-theme .compare-card .spec-table td:last-child {
-            color: #f8fafc;
-        }
-        body.dark-theme .compare-card .spec-table td {
-            border-bottom-color: rgba(255,255,255,0.08);
-        }
-        body.dark-theme .compare-card .card-body {
-            background: transparent;
-        }
-        .product-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            padding: 16px;
-            width: 100%;
-            max-width: 260px;
-            margin: 0 auto;
-            background: #f8fafc;
-            border-radius: 18px;
-            border: 1px solid rgba(148,163,184,0.25);
-            box-shadow: 0 8px 18px rgba(15,23,42,0.06);
-        }
-        .product-thumb {
-            width: 100%;
-            max-width: 180px;
-            max-height: 140px;
-            object-fit: contain;
-            border-radius: 16px;
-            background: #fff;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        }
-        .image-placeholder {
-            width: 100%;
-            max-width: 260px;
-            min-height: 130px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #475569;
-            background: #f8fafc;
-            border: 1px dashed #cbd5e1;
-            border-radius: 18px;
-            padding: 20px;
-            text-align: center;
-        }
-        th {
-            background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(30,64,175,0.1));
-            padding: 16px;
-            text-align: left;
-            font-weight: 700;
-            color: #0f2a4c;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        td {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.06);
-            color: #444;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        tr:hover {
-            background: rgba(37,99,235,0.05);
-        }
-        .spec-label {
-            font-weight: 600;
-            color: #333;
-        }
         .product-card {
             display: flex;
             flex-direction: column;
@@ -530,7 +408,33 @@
             padding: 16px;
             text-align: center;
         }
+        th {
+            background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(30,64,175,0.1));
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            color: #0f2a4c;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            color: #444;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background: rgba(37,99,235,0.05);
+        }
+        .spec-label {
+            font-weight: 600;
+            color: #333;
+        }
         @media (max-width: 980px) {
+            .compare-cards {
+                grid-template-columns: 1fr;
+            }
             .compare-tools {
                 flex-direction: column;
             }
@@ -551,6 +455,9 @@
             .compare-title h1 {
                 font-size: 1.8rem;
             }
+            .compare-card .card-image {
+                min-height: 160px;
+            }
             th, td {
                 padding: 10px 12px;
                 font-size: 0.9rem;
@@ -559,20 +466,6 @@
                 max-width: 120px;
                 max-height: 100px;
             }
-        }
-        body.dark-theme .compare-tools select,
-        body.dark-theme .compare-tools input {
-            background: rgba(15, 23, 42, 0.96);
-            border-color: rgba(148, 163, 184, 0.32);
-            color: #e2e8f0;
-        }
-        body.dark-theme .compare-tools input::placeholder {
-            color: #94a3b8;
-            opacity: 1;
-        }
-        body.dark-theme .tool-group label,
-        body.dark-theme .side-title {
-            color: #e2e8f0;
         }
         body.dark-theme .compare-card {
             background: rgba(15,23,42,0.92);
@@ -625,7 +518,9 @@
                 <a href="CASE.html">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html" class="active">COMPARE</a>
-                <a href="ADMIN.html" class="admin-btn-nav" style="display:none; visibility:hidden;">⚙️ ADMIN</a>
+                <!-- ปุ่มเฉพาะ Admin -->
+                <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
+                <a href="ADD_PRODUCT.html" class="add-data-btn-nav admin-only">➕ ADD DATA</a>
             </nav>
             <div class="header-actions">
                 <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
@@ -670,18 +565,19 @@
                     </div>
                 </div>
                 <div class="compare-cards">
-                <div class="compare-card">
-                    <div class="card-image" id="leftCardImage"></div>
-                    <div class="card-body">
-                        <div class="product-name" id="leftCardName"></div>
-                        <table class="spec-table" id="leftSpecTable"></table>
+                    <div class="compare-card">
+                        <div class="card-image" id="leftCardImage"></div>
+                        <div class="card-body">
+                            <div class="product-name" id="leftCardName"></div>
+                            <table class="spec-table" id="leftSpecTable"></table>
+                        </div>
                     </div>
-                </div>
-                <div class="compare-card">
-                    <div class="card-image" id="rightCardImage"></div>
-                    <div class="card-body">
-                        <div class="product-name" id="rightCardName"></div>
-                        <table class="spec-table" id="rightSpecTable"></table>
+                    <div class="compare-card">
+                        <div class="card-image" id="rightCardImage"></div>
+                        <div class="card-body">
+                            <div class="product-name" id="rightCardName"></div>
+                            <table class="spec-table" id="rightSpecTable"></table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -694,9 +590,11 @@
             }
             function updateAuth(){
                 const auth = document.getElementById('auth-action');
-                const adminLink = document.querySelector('.admin-btn-nav');
+                const adminElements = document.querySelectorAll('.admin-only');
                 const user = localStorage.getItem('spechub_user');
+                
                 if(!auth) return;
+                
                 if(user){
                     auth.textContent = user;
                     auth.href = '#';
@@ -707,20 +605,26 @@
                             window.location = getCurrentPage();
                         }
                     };
-                    if(adminLink){
-                        if(user === 'admin1234'){
-                            adminLink.style.display = 'inline-block';
-                            adminLink.style.visibility = 'visible';
-                        } else {
-                            adminLink.style.display = 'none';
-                            adminLink.style.visibility = 'hidden';
-                        }
+                    
+                    if(user === 'admin1234'){
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'inline-block', 'important');
+                            el.style.visibility = 'visible';
+                        });
+                    } else {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'none', 'important');
+                            el.style.visibility = 'hidden';
+                        });
                     }
                 } else {
                     auth.textContent = 'Login';
                     auth.href = 'login.html';
                     auth.onclick = null;
-                    if(adminLink){ adminLink.style.display = 'none'; adminLink.style.visibility = 'hidden'; }
+                    adminElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.visibility = 'hidden';
+                    });
                 }
             }
             updateAuth();
@@ -849,6 +753,7 @@
                 leftInput.value = '';
                 rightInput.value = '';
             }
+
             function createSuggestionItem(item, inputEl) {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
@@ -863,6 +768,7 @@
                 });
                 return div;
             }
+
             function showSuggestions(inputEl, listEl) {
                 const keyword = inputEl.value.trim().toLowerCase();
                 const items = getCurrentDatabase();
@@ -875,6 +781,7 @@
                 matches.forEach(item => listEl.appendChild(createSuggestionItem(item, inputEl)));
                 listEl.style.display = 'block';
             }
+
             function hideSuggestions(listEl) {
                 listEl.style.display = 'none';
             }

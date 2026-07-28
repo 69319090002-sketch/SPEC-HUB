@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPEC HUB - เพิ่ม/แก้ไขข้อมูลอุปกรณ์</title>
+    
+    <!-- 🛡️ Security Check: อนุญาตเฉพาะ admin1234 เท่านั้น -->
+    <script>
+        (function enforceAdminOnly() {
+            const currentUser = localStorage.getItem('spechub_user');
+            if (!currentUser || currentUser !== 'admin1234') {
+                alert('⛔ คุณไม่มีสิทธิ์เข้าถึงหน้านี้! (สำหรับ admin1234 เท่านั้น)');
+                window.location.replace('HOME.html');
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="theme-style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; color: #1e293b; }
+        
+        .page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        
+        /* Header Navbar */
+        header {
+            width: 100%; max-width: 1200px; display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 24px; background: rgba(255,255,255,0.9); border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        }
+        .brand { font-size: 1.5rem; font-weight: 800; letter-spacing: 2px; color: #2563eb; text-decoration: none; }
+        nav { display: flex; gap: 15px; align-items: center; }
+        nav a { text-decoration: none; color: #334155; font-weight: 600; font-size: 0.95rem; }
+        nav a.active { color: #2563eb !important; font-weight: 800; }
+
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+
+        .container { width: 100%; max-width: 1200px; }
+        .card { background: white; padding: 28px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        h2 { color: #2563eb; margin-bottom: 20px; font-size: 1.4rem; }
+        
+        /* Form Styling */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        label { display: block; font-weight: 700; margin-bottom: 6px; font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+            font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #2563eb; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-submit { background: #2563eb; color: white; padding: 10px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-submit:hover { background: #1d4ed8; }
+        .btn-cancel { background: #64748b; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; }
+
+        /* Search & Table */
+        .search-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 0.95rem; }
+        th { background: #f8fafc; font-weight: 700; }
+        
+        .btn-sm { padding: 6px 12px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+        .btn-edit { background: #eab308; color: white; }
+        .btn-delete { background: #ef4444; color: white; }
+
+        /* ซ่อนส่วนเฉพาะ Admin เป็นค่าเริ่มต้น */
+        .admin-only { display: none !important; }
+
+        /* Dark Mode Support */
+        body.dark-mode { background: #0f172a; color: #f8fafc; }
+        body.dark-mode header, body.dark-mode .card { background: #1e293b; }
+        body.dark-mode nav a { color: #cbd5e1; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #0f172a; color: #fff; border-color: #334155; }
+        body.dark-mode th { background: #0f172a; color: #fff; }
+        body.dark-mode td { border-color: #334155; }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <header>
+        <a href="HOME.html" class="brand">SPEC HUB</a>
+        <nav>
+            <a href="HOME.html">HOME</a>
+            <a href="CPU.html">CPU</a>
+            <a href="GPU.html">GPU</a>
+            <a href="CASE.html">CASE</a>
+            <a href="MAIN BORD.html">MAIN BORD</a>
+            <a href="COMPARE.html">COMPARE</a>
+            <!-- กำหนด class admin-only เพื่อซ่อน/แสดง ตามสิทธิ์ -->
+            <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
+            <a href="ADD_PRODUCT.html" class="add-data-btn-nav active admin-only">➕ ADD DATA</a>
+        </nav>
+        <div class="header-actions">
+            <button id="themeToggleBtn" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:20px; cursor:pointer;">🌙 Dark</button>
+            <a href="login.html" id="auth-action" style="text-decoration:none; font-weight:bold; color:#2563eb;">Login</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- ฟอร์ม กรอก/แก้ไข ข้อมูล -->
+        <div class="card">
+            <h2 id="formTitle">➕ เพิ่มข้อมูลอุปกรณ์ใหม่</h2>
+            <form id="hardwareForm">
+                <input type="hidden" id="editId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>หมวดหมู่สเปก:</label>
+                        <select id="category" required>
+                            <option value="CPU">CPU</option>
+                            <option value="GPU">GPU</option>
+                            <option value="CASE">CASE</option>
+                            <option value="MAINBOARD">MAINBOARD</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ชื่อรุ่น (Model Name):</label>
+                        <input type="text" id="name" placeholder="เช่น Intel Core i5-13600K" required>
+                    </div>
+                    <div class="form-group">
+                        <label>แบรนด์ (Brand):</label>
+                        <input type="text" id="brand" placeholder="เช่น Intel, AMD, ASUS">
+                    </div>
+                    <div class="form-group">
+                        <label>ราคา (บาท):</label>
+                        <input type="number" id="price" placeholder="เช่น 11500" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>ลิงก์รูปภาพ (Image URL):</label>
+                        <input type="url" id="image_url" placeholder="https://example.com/image.jpg">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>รายละเอียด / สเปกเพิ่มเติม:</label>
+                        <textarea id="detail" rows="3" placeholder="ระบุรายละเอียด เช่น Socket, Cores/Threads, VRAM..."></textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn-submit" id="saveBtn">บันทึกข้อมูล</button>
+                    <button type="button" class="btn-cancel" id="cancelBtn" onclick="resetForm()">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- รายการข้อมูลออนไลน์ + ค้นหา -->
+        <div class="card">
+            <h2>🔍 จัดการและค้นหาข้อมูลในระบบ</h2>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="พิมพ์ชื่อรุ่น หรือแบรนด์เพื่อค้นหา..." oninput="fetchHardware()">
+                <select id="filterCategory" onchange="fetchHardware()" style="width: 180px;">
+                    <option value="">ทั้งหมดทุกหมวด</option>
+                    <option value="CPU">CPU</option>
+                    <option value="GPU">GPU</option>
+                    <option value="CASE">CASE</option>
+                    <option value="MAINBOARD">MAINBOARD</option>
+                </select>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>หมวดหมู่</th>
+                        <th>ชื่อรุ่น</th>
+                        <th>แบรนด์</th>
+                        <th>ราคา</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="hardwareList">
+                    <tr><td colspan="5" style="text-align:center;">กำลังโหลดข้อมูล...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // สคริปต์ตรวจสอบการ Login และแสดงชื่อผู้ใช้/ปุ่ม Admin
+    (function(){
+        function updateAuth(){
+            const auth = document.getElementById('auth-action');
+            const adminElements = document.querySelectorAll('.admin-only');
+            const user = localStorage.getItem('spechub_user');
+            
+            if(!auth) return;
+            
+            if(user){
+                auth.textContent = user;
+                auth.href = '#';
+                auth.onclick = function(e){ 
+                    e.preventDefault(); 
+                    if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
+                        localStorage.removeItem('spechub_user'); 
+                        window.location.replace('HOME.html');
+                    }
+                };
+
+                if(user === 'admin1234'){
+                    adminElements.forEach(el => {
+                        el.style.setProperty('display', 'inline-block', 'important');
+                    });
+                } else {
+                    adminElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                    });
+                }
+            } else {
+                auth.textContent = 'Login';
+                auth.href = 'login.html';
+                auth.onclick = null;
+                adminElements.forEach(el => {
+                    el.style.setProperty('display', 'none', 'important');
+                });
+            }
+        }
+        updateAuth();
+    })();
+
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000/api/hardware'
+        : 'https://spec-hub.onrender.com/api/hardware';
+
+    let hardwareData = [];
+
+    // ดึงและแสดงรายการสเปก
+    async function fetchHardware() {
+        const search = document.getElementById('searchInput').value;
+        const category = document.getElementById('filterCategory').value;
+
+        try {
+            const res = await fetch(`${API_URL}?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
+            hardwareData = await res.json();
+            
+            const tbody = document.getElementById('hardwareList');
+            if (hardwareData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">ไม่พบข้อมูลอุปกรณ์</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = hardwareData.map(item => `
+                <tr>
+                    <td><b>${item.category}</b></td>
+                    <td>${item.name}</td>
+                    <td>${item.brand || '-'}</td>
+                    <td>${Number(item.price).toLocaleString()} ฿</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="setupEdit(${item.id})">✏️ แก้ไข</button>
+                        <button class="btn-sm btn-delete" onclick="deleteItem(${item.id})">🗑️ ลบ</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // เพิ่ม / แก้ไข
+    document.getElementById('hardwareForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editId').value;
+        const payload = {
+            category: document.getElementById('category').value,
+            name: document.getElementById('name').value,
+            brand: document.getElementById('brand').value,
+            price: document.getElementById('price').value,
+            image_url: document.getElementById('image_url').value,
+            detail: document.getElementById('detail').value
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API_URL}/${id}` : API_URL;
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            alert(result.message || 'บันทึกเรียบร้อย');
+            resetForm();
+            fetchHardware();
+        } catch (err) {
+            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        }
+    });
+
+    function setupEdit(id) {
+        const item = hardwareData.find(h => h.id === id);
+        if (!item) return;
+
+        document.getElementById('editId').value = item.id;
+        document.getElementById('category').value = item.category;
+        document.getElementById('name').value = item.name;
+        document.getElementById('brand').value = item.brand || '';
+        document.getElementById('price').value = item.price;
+        document.getElementById('image_url').value = item.image_url || '';
+        document.getElementById('detail').value = item.detail || '';
+
+        document.getElementById('formTitle').textContent = '✏️ แก้ไขข้อมูลอุปกรณ์';
+        document.getElementById('saveBtn').textContent = 'อัปเดตข้อมูล';
+        document.getElementById('cancelBtn').style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('hardwareForm').reset();
+        document.getElementById('editId').value = '';
+        document.getElementById('formTitle').textContent = '➕ เพิ่มข้อมูลอุปกรณ์ใหม่';
+        document.getElementById('saveBtn').textContent = 'บันทึกข้อมูล';
+        document.getElementById('cancelBtn').style.display = 'none';
+    }
+
+    async function deleteItem(id) {
+        if (!confirm('ยืนยันว่าต้องการลบข้อมูลนี้ออกจากระบบออนไลน์?')) return;
+        try {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            fetchHardware();
+        } catch (err) {
+            alert('ลบข้อมูลไม่สำเร็จ');
+        }
+    }
+
+    window.onload = fetchHardware;
+</script>
+<script src="theme-toggle.js"></script>
+</body>
+</html>

@@ -48,6 +48,7 @@
         nav {
             display: flex;
             gap: 24px;
+            align-items: center;
         }
         nav a {
             text-decoration: none;
@@ -66,6 +67,11 @@
             background-clip: text;
             font-weight: 700;
         }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
         .header-actions a {
             color: #fff;
             background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
@@ -73,6 +79,10 @@
             border-radius: 999px;
             text-decoration: none;
             font-weight: 700;
+        }
+        /* CSS สำหรับซ่อน Element เฉพาะ Admin เป็นค่าเริ่มต้น */
+        .admin-only {
+            display: none !important;
         }
         .hero {
             width: 100%;
@@ -205,7 +215,9 @@
                 <a href="CASE.html" class="active">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
-                <a href="ADMIN.html" class="admin-btn-nav" style="display:none; visibility:hidden;">⚙️ ADMIN</a>
+                <!-- ปุ่มเฉพาะ Admin -->
+                <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
+                <a href="ADD_PRODUCT.html" class="add-data-btn-nav admin-only">➕ ADD DATA</a>
             </nav>
             <div class="header-actions">
                 <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
@@ -229,9 +241,11 @@
             }
             function updateAuth(){
                 const auth = document.getElementById('auth-action');
-                const adminLink = document.querySelector('.admin-btn-nav');
+                const adminElements = document.querySelectorAll('.admin-only');
                 const user = localStorage.getItem('spechub_user');
+                
                 if(!auth) return;
+                
                 if(user){
                     auth.textContent = user;
                     auth.href = '#';
@@ -242,20 +256,27 @@
                             window.location = getCurrentPage();
                         }
                     };
-                    if(adminLink){
-                        if(user === 'admin1234'){
-                            adminLink.style.display = 'inline-block';
-                            adminLink.style.visibility = 'visible';
-                        } else {
-                            adminLink.style.display = 'none';
-                            adminLink.style.visibility = 'hidden';
-                        }
+                    
+                    // หาก Login ด้วย admin1234 ให้เปิดการแสดงผลปุ่ม Admin และ Add Data
+                    if(user === 'admin1234'){
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'inline-block', 'important');
+                            el.style.visibility = 'visible';
+                        });
+                    } else {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'none', 'important');
+                            el.style.visibility = 'hidden';
+                        });
                     }
                 } else {
                     auth.textContent = 'Login';
                     auth.href = 'login.html';
                     auth.onclick = null;
-                    if(adminLink){ adminLink.style.display = 'none'; adminLink.style.visibility = 'hidden'; }
+                    adminElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.visibility = 'hidden';
+                    });
                 }
             }
             updateAuth();

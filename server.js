@@ -26,7 +26,7 @@ pool.connect((err, client, release) => {
 });
 
 // ==========================================
-// ROUTES (รองรับทั้ง /signup และ /api/signup กันพลาด)
+// ROUTES
 // ==========================================
 
 // เช็กว่าเซิร์ฟเวอร์ตื่นอยู่ไหม
@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
     res.send('🚀 SPEC HUB Backend is RUNNING!');
 });
 
-// ฟังก์ชันสำหรับ Signup
+// 1. SIGNUP
 const handleSignup = async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -67,11 +67,51 @@ const handleSignup = async (req, res) => {
     }
 };
 
-// ดักจับทั้ง 2 URL ป้องกัน 404
 app.post('/api/signup', handleSignup);
 app.post('/signup', handleSignup);
 
-// 2. GET USERS (สำหรับ Admin)
+// 2. LOGIN (เพิ่มส่วนนี้เพื่อตรวจสอบบัญชีจาก Neon DB)
+const handleLogin = async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ message: 'กรุณากรอก Username และ Password' });
+    }
+
+    try {
+        // ค้นหาบัญชีผู้ใช้จาก Neon DB โดยเช็กจาก Username
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        // กรณีไม่พบบัญชีผู้ใช้
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'ไม่พบชื่อผู้ใช้นี้ในระบบ' });
+        }
+
+        const user = result.rows[0];
+
+        // ตรวจสอบ Password
+        if (user.password !== password) {
+            return res.status(401).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
+        }
+
+        // เข้าสู่ระบบสำเร็จ
+        return res.status(200).json({
+            message: 'เข้าสู่ระบบสำเร็จ',
+            username: user.username,
+            email: user.email
+        });
+
+    } catch (err) {
+        console.error('Login Error:', err.message);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล: ' + err.message });
+    }
+};
+
+// ดักจับทั้ง /api/login และ /login ป้องกัน 404
+app.post('/api/login', handleLogin);
+app.post('/login', handleLogin);
+
+// 3. GET USERS (สำหรับ Admin)
 app.get('/api/users', async (req, res) => {
     try {
         const result = await pool.query('SELECT id, username, email, password, created_at FROM users ORDER BY id ASC');
@@ -81,7 +121,7 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// 3. EDIT PASSWORD
+// 4. EDIT PASSWORD
 app.put('/api/users/:id/password', async (req, res) => {
     const { id } = req.params;
     const { newPassword } = req.body;
@@ -97,7 +137,7 @@ app.put('/api/users/:id/password', async (req, res) => {
     }
 });
 
-// 4. DELETE USER
+// 5. DELETE USER
 app.delete('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
