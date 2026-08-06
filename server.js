@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const app = express();
@@ -43,18 +44,25 @@ const handleSignup = async (req, res) => {
     }
 
     try {
+        const cleanUsername = username.trim();
+        const cleanEmail = email.trim().toLowerCase();
+
         const checkUser = await pool.query(
             'SELECT * FROM users WHERE username = $1 OR email = $2',
-            [username, email]
+            [cleanUsername, cleanEmail]
         );
 
         if (checkUser.rows.length > 0) {
             return res.status(400).json({ message: 'Username หรือ Email นี้มีผู้ใช้งานในระบบแล้ว' });
         }
 
+        // เข้ารหัส Password ด้วย bcrypt
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
         const newUser = await pool.query(
-            'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
-            [username, email, password]
+            'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
+            [cleanUsername, cleanEmail, hashedPassword]
         );
 
         res.status(201).json({
@@ -70,7 +78,7 @@ const handleSignup = async (req, res) => {
 app.post('/api/signup', handleSignup);
 app.post('/signup', handleSignup);
 
-// 2. LOGIN (เพิ่มส่วนนี้เพื่อตรวจสอบบัญชีจาก Neon DB)
+// 2. LOGIN
 const handleLogin = async (req, res) => {
     const { username, password } = req.body;
 
@@ -79,26 +87,33 @@ const handleLogin = async (req, res) => {
     }
 
     try {
-        // ค้นหาบัญชีผู้ใช้จาก Neon DB โดยเช็กจาก Username
-        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username.trim()]);
 
-        // กรณีไม่พบบัญชีผู้ใช้
         if (result.rows.length === 0) {
             return res.status(401).json({ message: 'ไม่พบชื่อผู้ใช้นี้ในระบบ' });
         }
 
         const user = result.rows[0];
 
-        // ตรวจสอบ Password
-        if (user.password !== password) {
+        // เช็กว่า Password ใน DB เป็นแบบ Hash (ขึ้นต้นด้วย $2a$ หรือ $2b$) หรือ Plaintext เดิม
+        let isMatch = false;
+        if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+            isMatch = await bcrypt.compare(password, user.password);
+        } else {
+            isMatch = (user.password === password);
+        }
+
+        if (!isMatch) {
             return res.status(401).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
         }
 
-        // เข้าสู่ระบบสำเร็จ
         return res.status(200).json({
             message: 'เข้าสู่ระบบสำเร็จ',
-            username: user.username,
-            email: user.email
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email
+            }
         });
 
     } catch (err) {
@@ -107,14 +122,13 @@ const handleLogin = async (req, res) => {
     }
 };
 
-// ดักจับทั้ง /api/login และ /login ป้องกัน 404
 app.post('/api/login', handleLogin);
 app.post('/login', handleLogin);
 
-// 3. GET USERS (สำหรับ Admin)
+// 3. GET USERS (สำหรับ Admin - ปลดล็อกไม่ส่ง password)
 app.get('/api/users', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, username, email, password, created_at FROM users ORDER BY id ASC');
+        const result = await pool.query('SELECT id, username, email, created_at FROM users ORDER BY id ASC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -126,12 +140,24 @@ app.put('/api/users/:id/password', async (req, res) => {
     const { id } = req.params;
     const { newPassword } = req.body;
 
+    if (!newPassword || newPassword.trim() === '') {
+        return res.status(400).json({ message: 'กรุณาระบุรหัสผ่านใหม่' });
+    }
+
     try {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword.trim(), salt);
+
         const result = await pool.query(
             'UPDATE users SET password = $1 WHERE id = $2 RETURNING id, username',
-            [newPassword.trim(), id]
+            [hashedPassword, id]
         );
-        res.json({ message: `แก้ไขรหัสผ่านสำเร็จ!` });
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
+        }
+
+        res.json({ message: 'แก้ไขรหัสผ่านสำเร็จ!' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -141,8 +167,21 @@ app.put('/api/users/:id/password', async (req, res) => {
 app.delete('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        await pool.query('DELETE FROM users WHERE id = $1', [id]);
-        res.json({ message: `ลบบัญชีเรียบร้อยแล้ว!` });
+        const result = await pool.query('DELETE FROM users WHERE id = $1', [id]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
+        }
+        res.json({ message: 'ลบบัญชีเรียบร้อยแล้ว!' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 6. GET ALL CPUS (สำหรับดึงข้อมูล CPU ไปแสดงหน้าเว็บ)
+app.get('/api/cpus', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM cpus ORDER BY id ASC');
+        res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

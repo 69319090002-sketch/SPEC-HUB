@@ -1,21 +1,165 @@
 :root {
     color-scheme: light;
+    --brand-start: #2563eb;
+    --brand-end: #1e40af;
+    --surface: #ffffff;
+    --surface-alt: #f8fafc;
+    --text-default: #111827;
+    --text-muted: #64748b;
 }
 
 .theme-toggle-btn {
+    font-family: inherit;
     border: none;
     outline: none;
     cursor: pointer;
-    background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
-    color: #fff;
-    padding: 10px 14px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease,
+                background 0.18s ease, color 0.18s ease;
     border-radius: 999px;
+    min-height: 44px;
+    padding: 0.92rem 1.4rem;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+button:hover,
+.btn:hover,
+.theme-toggle-btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-danger:hover,
+.btn-action:hover {
+    transform: translateY(-1px);
+    opacity: 0.96;
+}
+
+button:active,
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-danger:active,
+.btn-action:active,
+.theme-toggle-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+}
+
+button:focus-visible,
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-danger:focus-visible,
+.btn-action:focus-visible,
+.theme-toggle-btn:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.25);
+    outline-offset: 3px;
+}
+
+.btn-primary,
+.theme-toggle-btn {
+    background: linear-gradient(90deg, var(--brand-start) 0%, var(--brand-end) 100%);
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #fff;
+    color: var(--brand-start);
+    border: 1px solid rgba(37, 99, 235, 0.16);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: var(--danger-hover);
+}
+
+.search-box button {
+    background: linear-gradient(90deg, var(--brand-start) 0%, var(--brand-end) 100%);
+    color: #fff;
+    padding: 0.92rem 1.4rem;
+    border-radius: 999px;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+/* ==================== จัดกึ่งกลางปุ่ม Login / ชื่อผู้ใช้ (#auth-action) ==================== */
+.header-actions a,
+#auth-action {
+    border-radius: 999px;
+    padding: 0 1.4rem !important;
+    min-height: 44px;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    font-family: inherit;
+    font-size: 0.95rem;
     font-weight: 700;
-    transition: all 0.2s ease;
+    letter-spacing: 0.01em;
+    text-decoration: none !important;
+    color: #fff !important;
+}
+
+/* ==================== ปรับสีปุ่ม ADMIN & SUGGESTIONS สำหรับโหมดกลางวัน ==================== */
+.admin-btn-nav,
+.add-data-btn-nav,
+nav a.admin-btn-nav,
+nav a.add-data-btn-nav {
+    border-radius: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    display: inline !important;
+    color: #222 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+.admin-btn-nav:hover,
+.add-data-btn-nav:hover,
+nav a.admin-btn-nav:hover,
+nav a.add-data-btn-nav:hover {
+    color: #2563eb !important;
+    text-decoration: none !important;
+    border-bottom: none !important;
+    background: transparent !important;
+}
+
+nav a.admin-btn-nav.active,
+nav a.add-data-btn-nav.active,
+.admin-btn-nav.active,
+.add-data-btn-nav.active {
+    text-decoration: none !important;
+    border-bottom: none !important;
+    background: transparent !important;
+    color: #2563eb !important;
+    -webkit-text-fill-color: #2563eb !important;
+}
+
+.theme-toggle-btn {
+    background: linear-gradient(90deg, var(--brand-start) 0%, var(--brand-end) 100%);
+    color: #fff;
+    padding: 0.85rem 1.4rem;
+    min-height: 44px;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
 }
 
 .theme-toggle-btn:hover {
-    opacity: 0.95;
+    opacity: 0.96;
 }
 
 .theme-toggle-login {
@@ -24,6 +168,7 @@
     right: 18px;
 }
 
+/* ==================== DARK MODE BASE ==================== */
 body.dark-theme {
     background: #0b1120;
     color: #e2e8f0;
@@ -31,19 +176,10 @@ body.dark-theme {
 
 body.dark-theme p,
 body.dark-theme span,
-body.dark-theme td,
-body.dark-theme th,
-body.dark-theme label,
-body.dark-theme .hero-text p,
-body.dark-theme .spec-table td,
-body.dark-theme .product-name,
-body.dark-theme .compare-title p,
-body.dark-theme .search-box input,
-body.dark-theme .search-box button,
-body.dark-theme .note,
-body.dark-theme .label,
-body.dark-theme .subtitle,
-body.dark-theme .case-name,
+body.dark-theme td {
+    color: #e2e8f0;
+}
+
 body.dark-theme .mobo-name,
 body.dark-theme .cpu-name {
     color: #e2e8f0;
@@ -51,40 +187,40 @@ body.dark-theme .cpu-name {
 
 body.dark-theme a {
     color: #e2e8f0;
-}
-
-body.dark-theme .brand {
-    color: #fff !important;
-    background: none !important;
-    -webkit-text-fill-color: initial !important;
-    -webkit-background-clip: initial !important;
-    background-clip: initial !important;
-}
-
-body.dark-theme .brand:hover,
-body.dark-theme .brand:focus {
-    color: #fff !important;
+    text-decoration: none !important;
 }
 
 body.dark-theme nav a {
     color: #d1d5db !important;
+    text-decoration: none !important;
 }
 
 body.dark-theme nav a:hover,
-body.dark-theme nav a.active,
-body.dark-theme .subtitle,
-body.dark-theme .hero-text h1,
-body.dark-theme .compare-title h1,
-body.dark-theme .case-name,
-body.dark-theme .mobo-name,
-body.dark-theme .cpu-name,
-body.dark-theme .gpu-name,
-body.dark-theme .product-name {
+body.dark-theme nav a.active {
     color: #fff !important;
     background: none !important;
-    -webkit-text-fill-color: initial !important;
-    -webkit-background-clip: initial !important;
-    background-clip: initial !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
+/* บังคับสีปุ่ม ADMIN & SUGGESTIONS เมื่ออยู่ใน DARK MODE */
+body.dark-theme .admin-btn-nav,
+body.dark-theme .add-data-btn-nav,
+body.dark-theme nav a.admin-btn-nav,
+body.dark-theme nav a.add-data-btn-nav {
+    color: #d1d5db !important;
+    -webkit-text-fill-color: #d1d5db !important;
+}
+
+body.dark-theme .admin-btn-nav:hover,
+body.dark-theme .add-data-btn-nav:hover,
+body.dark-theme nav a.admin-btn-nav:hover,
+body.dark-theme nav a.add-data-btn-nav:hover,
+body.dark-theme nav a.admin-btn-nav.active,
+body.dark-theme nav a.add-data-btn-nav.active,
+body.dark-theme .admin-btn-nav.active,
+body.dark-theme .add-data-btn-nav.active {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
 }
 
 body.dark-theme .page {
@@ -96,30 +232,10 @@ body.dark-theme header {
     box-shadow: 0 10px 35px rgba(0, 0, 0, 0.55);
 }
 
-body.dark-theme .brand {
-    background: linear-gradient(90deg, #60a5fa 0%, #38bdf8 100%);
-    -webkit-text-fill-color: transparent;
-}
-
-body.dark-theme nav a {
-    color: #d1d5db;
-}
-
-body.dark-theme nav a:hover {
-    color: #fff;
-}
-
-body.dark-theme nav a.active {
-    background: linear-gradient(90deg, #60a5fa 0%, #38bdf8 100%);
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 700;
-}
-
 body.dark-theme .header-actions a,
 body.dark-theme .theme-toggle-btn {
     background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
-    color: #fff;
+    color: #fff !important;
 }
 
 body.dark-theme .hero,
@@ -198,8 +314,6 @@ body.dark-theme tr:hover {
 
 body.dark-theme .image-placeholder {
     background: rgba(255, 255, 255, 0.05);
-    color: #cbd5e1;
-    border-color: rgba(255, 255, 255, 0.12);
 }
 
 body.dark-theme .product-card {
@@ -212,23 +326,6 @@ body.dark-theme .box {
 
 body.dark-theme .box h2 {
     color: #f8fafc;
-}
-
-body.dark-theme .brand {
-    color: #fff !important;
-    background: none !important;
-    -webkit-text-fill-color: unset !important;
-    background-clip: unset !important;
-}
-
-body.dark-theme nav a {
-    color: #d1d5db !important;
-}
-
-body.dark-theme nav a.active,
-body.dark-theme nav a:hover {
-    color: #fff !important;
-    background: none !important;
 }
 
 body.dark-theme .subtitle,
@@ -264,4 +361,46 @@ body.page-transition-exit {
 
 body.dark-theme .theme-toggle-btn {
     color: #fff !important;
+}
+
+/* ==========================================================================
+   📌 โลโก้ SPEC HUB (สไตล์โทนสีน้ำเงินพรีเมียม สอดคล้องกับธีมหลัก)
+   ========================================================================== */
+
+/* 1. โหมดสว่าง (Light Mode: น้ำเงินไล่เฉดเข้ม + เอฟเฟกต์ Gradient) */
+.brand,
+a.brand,
+header .brand {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    
+    color: transparent !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: none !important;
+}
+
+/* 2. โหมดมืด (Dark Mode: ฟ้านีออนสว่างเด่นชัดบนพื้นหลังมืด) */
+body.dark-theme .brand,
+body.dark-theme a.brand,
+body.dark-theme header .brand {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
+    
+    color: transparent !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: none !important;
 }

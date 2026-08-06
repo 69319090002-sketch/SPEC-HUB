@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPEC HUB - ระบบจัดการข้อมูล Admin</title>
+
+    <!-- 📌 โลโก้ Favicon บนแท็บบราว์เซอร์ -->
+    <link rel="icon" type="image/png" href="assets/LOGO SPECHUB.png">
     
     <!-- 🛡️ Security Check: บล็อกทันทีถ้าไม่ใช่ admin1234 (ทำงานก่อน Render หน้าเว็บ) -->
     <script>
@@ -25,9 +28,11 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #d8d8d8;
-            color: #111;
+            font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(10, 15, 30, 0.4), rgba(10, 15, 30, 0.6)),
+                        url('assets/BK%20LOGUN.jpg') center/cover no-repeat fixed;
+            color: #f8fafc;
+            min-height: 100vh;
         }
 
         .page {
@@ -35,110 +40,130 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
-            background: linear-gradient(180deg, #e5e5e5 0%, #c7c7c7 100%);
+            padding: 24px;
         }
 
-        /* ================= Header Navbar ================= */
         header {
             width: 100%;
             max-width: 1200px;
-            display: flex;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
             align-items: center;
-            justify-content: space-between;
-            padding: 12px 24px;
-            background: rgba(255,255,255,0.85);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            padding: 14px 28px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
             margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
         }
 
         .brand {
-            font-size: 1.5rem;
-            font-weight: 800;
+            font-size: 1.6rem;
+            font-weight: 700;
             letter-spacing: 2px;
-            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-decoration: none;
+            text-decoration: none !important;
+            white-space: nowrap;
         }
 
         nav {
             display: flex !important;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        nav a {
-            text-decoration: none;
-            color: #222;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-        }
-
-        nav a:hover {
-            color: #2563eb;
-        }
-
-        /* 🛠️ สีปุ่ม ADMIN เมื่อเปิดอยู่ในหน้าปัจจุบัน */
-        nav a.active, .admin-btn-nav.active {
-            color: #2563eb !important;
-            -webkit-text-fill-color: #2563eb !important;
-            font-weight: 800 !important;
-            background: none !important;
-        }
-
-        .admin-btn-nav {
+        nav a,
+        nav a:visited,
+        nav a.admin-btn-nav,
+        nav a.add-data-btn-nav {
             text-decoration: none !important;
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
+            color: #cbd5e1 !important;
+            font-weight: 500 !important;
+            font-size: 0.95rem;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+            border: 1px solid transparent !important;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        nav a:hover,
+        nav a.admin-btn-nav:hover,
+        nav a.add-data-btn-nav:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        nav a.active,
+        nav a.admin-btn-nav.active,
+        nav a.add-data-btn-nav.active {
+            color: #ffffff !important;
+            background: rgba(59, 130, 246, 0.25) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+
+        .admin-only {
+            display: none !important;
         }
 
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            white-space: nowrap;
         }
 
-        .header-actions a {
-            color: #fff;
-            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
-            padding: 10px 14px;
-            border-radius: 999px;
+        .header-actions a,
+        .header-actions button.auth-btn {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 10px 22px;
+            border-radius: 50px;
             text-decoration: none;
-            font-weight: 700;
-        }
-
-        .header-actions a:hover {
-            opacity: 0.95;
-        }
-
-        .theme-toggle-btn {
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
             font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             cursor: pointer;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        /* ================= Admin Content Section ================= */
+        .header-actions a:hover,
+        .header-actions button.auth-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8), 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
         .container {
             width: 100%;
             max-width: 1200px;
         }
 
         .card {
-            background: #ffffff;
-            border-radius: 24px;
-            padding: 32px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.14);
+            background: rgba(15, 23, 42, 0.55);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .card-header {
@@ -147,29 +172,34 @@
             align-items: center;
             margin-bottom: 24px;
             padding-bottom: 16px;
-            border-bottom: 2px solid rgba(226, 232, 240, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .card-title {
             font-size: 1.6rem;
             font-weight: 800;
-            color: #2563eb !important;
-            -webkit-text-fill-color: #2563eb !important;
-            display: inline-block;
+            color: #60a5fa !important;
+            -webkit-text-fill-color: #60a5fa !important;
         }
 
         .btn-refresh {
-            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
-            color: white;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #fff;
             border: none;
             padding: 10px 20px;
             border-radius: 999px;
             font-weight: 700;
             cursor: pointer;
-            transition: opacity 0.2s;
+            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
+            transition: transform 0.18s ease, opacity 0.18s ease;
         }
 
-        .btn-refresh:hover { opacity: 0.9; }
+        .btn-refresh:hover {
+            transform: translateY(-1px);
+            opacity: 0.96;
+        }
 
         .status-msg {
             padding: 12px 16px;
@@ -177,96 +207,56 @@
             margin-bottom: 20px;
             font-size: 0.95rem;
             font-weight: 600;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
         }
 
-        .status-success { background-color: #dcfce7; color: #15803d; }
-        .status-error { background-color: #fee2e2; color: #b91c1c; }
+        .status-success { background-color: rgba(16, 185, 129, 0.16); color: #a7f3d0; border-color: rgba(16, 185, 129, 0.24); }
+        .status-error { background-color: rgba(239, 68, 68, 0.16); color: #fecaca; border-color: rgba(239, 68, 68, 0.24); }
 
-        /* ================= สไตล์ตาราง ================= */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            background: #ffffff;
+            background: rgba(15, 23, 42, 0.45);
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         th, td {
             padding: 14px 16px;
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-            color: #334155 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: #e2e8f0 !important;
             font-size: 0.95rem;
         }
 
         th {
-            background-color: #f8fafc;
-            color: #0f172a !important;
+            background: rgba(15, 23, 42, 0.65);
+            color: #f8fafc !important;
             font-weight: 700;
         }
 
         td b {
-            color: #0f172a !important;
-        }
-
-        .pass-badge {
-            background-color: #fce7f3;
-            color: #be185d !important;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-weight: 600;
+            color: #ffffff !important;
         }
 
         .btn-action {
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: 999px;
             border: none;
             font-weight: 700;
             font-size: 0.85rem;
             cursor: pointer;
             margin-right: 4px;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
+            transition: transform 0.18s ease, opacity 0.18s ease;
         }
 
         .btn-edit { background-color: #eab308; color: #fff !important; }
         .btn-delete { background-color: #ef4444; color: #fff !important; }
-
-        /* 🛠️ สไตล์สำหรับโหมดมืด (Dark Mode Support) */
-        body.dark-mode nav a.active, 
-        body.dark-mode .admin-btn-nav.active {
-            color: #60a5fa !important;
-            -webkit-text-fill-color: #60a5fa !important;
-        }
-
-        body.dark-mode .card {
-            background: #1e293b !important;
-        }
-
-        body.dark-mode .card-title {
-            color: #60a5fa !important;
-            -webkit-text-fill-color: #60a5fa !important;
-        }
-
-        body.dark-mode table {
-            background: #0f172a !important;
-            border-color: #334155 !important;
-        }
-
-        body.dark-mode th {
-            background-color: #1e293b !important;
-            color: #f8fafc !important;
-        }
-
-        body.dark-mode td {
-            color: #cbd5e1 !important;
-            border-color: #334155 !important;
-        }
-
-        body.dark-mode td b {
-            color: #f8fafc !important;
-        }
     </style>
 </head>
 <body>
@@ -282,9 +272,9 @@
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
                 <a href="ADMIN.html" class="admin-btn-nav active">⚙️ ADMIN</a>
+                <a href="ADD_PRODUCT.html" class="add-data-btn-nav admin-only">💬 SUGGESTIONS</a>
             </nav>
             <div class="header-actions">
-                <button id="themeToggleBtn" class="theme-toggle-btn" type="button">🌙 Dark</button>
                 <a href="login.html" id="auth-action">Login</a>
             </div>
         </header>
@@ -294,7 +284,7 @@
             <div class="card">
                 <div class="card-header">
                     <h1 class="card-title">SPEC HUB - จัดการบัญชีผู้ใช้ใน Neon Console</h1>
-                    <button class="btn-refresh" onclick="loadUsers()">🔄 รีเฟรชข้อมูล</button>
+                    <button class="btn-refresh" id="refreshBtn">🔄 รีเฟรชข้อมูล</button>
                 </div>
 
                 <div id="statusBox" class="status-msg" style="display: none;"></div>
@@ -305,14 +295,13 @@
                             <th>ID</th>
                             <th>Username</th>
                             <th>Email</th>
-                            <th>Password (รหัสผ่าน)</th>
                             <th>วันที่สร้าง</th>
                             <th>จัดการข้อมูล</th>
                         </tr>
                     </thead>
                     <tbody id="userTableBody">
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 20px;">กำลังดึงข้อมูลผู้ใช้...</td>
+                            <td colspan="5" style="text-align: center; padding: 20px;">กำลังดึงข้อมูลผู้ใช้...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -320,38 +309,61 @@
         </div>
     </div>
 
-    <!-- 📌 Script จัดการ UI Header & Logout -->
+    <!-- 📌 Script หลักสำหรับจัดการ UI และดึงข้อมูล -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const auth = document.getElementById('auth-action');
-            const currentUser = localStorage.getItem('spechub_user');
-            
-            if (auth && currentUser === 'admin1234') {
-                auth.textContent = currentUser;
-                auth.href = '#';
-                auth.onclick = function(e) {
-                    e.preventDefault();
-                    if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) {
-                        localStorage.removeItem('spechub_user');
-                        window.location.href = 'HOME.html';
-                    }
-                };
-            }
-        });
-    </script>
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
 
-    <!-- 📌 Script ดึงและจัดการข้อมูลผู้ใช้ -->
-    <script>
         const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:5000'
             : 'https://spec-hub.onrender.com';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const auth = document.getElementById('auth-action');
+            const currentUser = localStorage.getItem('spechub_user');
+            const adminElements = document.querySelectorAll('.admin-only');
+            
+            if (currentUser === 'admin1234') {
+                adminElements.forEach(el => {
+                    el.style.setProperty('display', 'inline-block', 'important');
+                    el.style.visibility = 'visible';
+                });
+
+                if (auth) {
+                    auth.textContent = `${currentUser} (Logout)`;
+                    auth.href = '#';
+                    auth.onclick = function(e) {
+                        e.preventDefault();
+                        if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) {
+                            localStorage.removeItem('spechub_user');
+                            window.location.href = 'HOME.html';
+                        }
+                    };
+                }
+            } else {
+                adminElements.forEach(el => {
+                    el.style.setProperty('display', 'none', 'important');
+                    el.style.visibility = 'hidden';
+                });
+            }
+
+            document.getElementById('refreshBtn').addEventListener('click', loadUsers);
+            loadUsers();
+        });
 
         async function loadUsers() {
             const statusBox = document.getElementById('statusBox');
             const tableBody = document.getElementById('userTableBody');
 
             statusBox.style.display = 'none';
-            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">กำลังดึงข้อมูล...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">กำลังดึงข้อมูล...</td></tr>';
 
             try {
                 const res = await fetch(`${API_BASE_URL}/api/users?t=${Date.now()}`);
@@ -363,24 +375,30 @@
                 statusBox.innerHTML = `✅ เชื่อมต่อ Neon ผ่าน Server สำเร็จ! โหลดล่าสุดเมื่อ: ${new Date().toLocaleTimeString()} (ทั้งหมด ${users.length} รายการ)`;
                 statusBox.style.display = 'block';
 
-                if (users.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">ไม่พบข้อมูลผู้ใช้ในระบบ</td></tr>';
+                if (!Array.isArray(users) || users.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">ไม่พบข้อมูลผู้ใช้ในระบบ</td></tr>';
                     return;
                 }
 
-                tableBody.innerHTML = users.map(user => `
-                    <tr>
-                        <td>${user.id}</td>
-                        <td><b>${user.username}</b></td>
-                        <td>${user.email}</td>
-                        <td><span class="pass-badge">${user.password}</span></td>
-                        <td>${user.created_at ? new Date(user.created_at).toLocaleString('th-TH') : '-'}</td>
-                        <td>
-                            <button class="btn-action btn-edit" onclick="editPassword(${user.id}, '${user.username}')">✏️ แก้ไขรหัสผ่าน</button>
-                            <button class="btn-action btn-delete" onclick="deleteUser(${user.id}, '${user.username}')">🗑️ ลบ</button>
-                        </td>
-                    </tr>
-                `).join('');
+                tableBody.innerHTML = users.map(user => {
+                    const safeId = escapeHtml(user.id);
+                    const safeUsername = escapeHtml(user.username);
+                    const safeEmail = escapeHtml(user.email);
+                    const safeCreatedAt = user.created_at ? new Date(user.created_at).toLocaleString('th-TH') : '-';
+
+                    return `
+                        <tr>
+                            <td>${safeId}</td>
+                            <td><b>${safeUsername}</b></td>
+                            <td>${safeEmail}</td>
+                            <td>${safeCreatedAt}</td>
+                            <td>
+                                <button class="btn-action btn-edit" data-id="${safeId}" data-username="${safeUsername}" onclick="handleEditPassword(this)">✏️ เปลี่ยนรหัสผ่าน</button>
+                                <button class="btn-action btn-delete" data-id="${safeId}" data-username="${safeUsername}" onclick="handleDeleteUser(this)">🗑️ ลบ</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
 
             } catch (err) {
                 console.error('Error:', err);
@@ -388,11 +406,14 @@
                 statusBox.innerHTML = `❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ (${API_BASE_URL}) ได้`;
                 statusBox.style.display = 'block';
 
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ef4444;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ef4444;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
             }
         }
 
-        async function editPassword(id, username) {
+        async function handleEditPassword(btn) {
+            const id = btn.getAttribute('data-id');
+            const username = btn.getAttribute('data-username');
+
             const newPassword = prompt(`กรอกรหัสผ่านใหม่สำหรับผู้ใช้ "${username}":`);
             if (!newPassword || newPassword.trim() === '') return;
 
@@ -400,32 +421,38 @@
                 const res = await fetch(`${API_BASE_URL}/api/users/${id}/password`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ newPassword })
+                    body: JSON.stringify({ newPassword: newPassword.trim() })
                 });
+
                 const data = await res.json();
-                alert(data.message || 'อัปเดตรหัสผ่านสำเร็จ');
+                if (!res.ok) throw new Error(data.message || 'ไม่สามารถแก้ไขรหัสผ่านได้');
+
+                alert(data.message || 'อัปเดตรหัสผ่านสำเร็จ!');
                 loadUsers();
             } catch (err) {
-                alert('เกิดข้อผิดพลาดในการแก้ไขรหัสผ่าน');
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการแก้ไขรหัสผ่าน: ' + err.message);
             }
         }
 
-        async function deleteUser(id, username) {
+        async function handleDeleteUser(btn) {
+            const id = btn.getAttribute('data-id');
+            const username = btn.getAttribute('data-username');
+
             if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบบัญชี "${username}"?`)) return;
 
             try {
                 const res = await fetch(`${API_BASE_URL}/api/users/${id}`, { method: 'DELETE' });
                 const data = await res.json();
-                alert(data.message || 'ลบบัญชีสำเร็จ');
+                if (!res.ok) throw new Error(data.message || 'ไม่สามารถลบบัญชีได้');
+
+                alert(data.message || 'ลบบัญชีสำเร็จ!');
                 loadUsers();
             } catch (err) {
-                alert('เกิดข้อผิดพลาดในการลบบัญชี');
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการลบบัญชี: ' + err.message);
             }
         }
-
-        window.onload = loadUsers;
     </script>
-
-    <script src="theme-toggle.js"></script>
 </body>
 </html>

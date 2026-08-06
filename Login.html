@@ -1,136 +1,273 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPEC HUB - Login</title>
-    <link rel="stylesheet" href="theme-style.css">
+    <!-- เพิ่ม Favicon -->
+    <link rel="icon" type="image/png" href="assets/LOGO%20SPECHUB.png">
+    <!-- นำเข้า Font 'Inter' เพื่อความทันสมัย -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- นำเข้า Font Awesome สำหรับไอคอน -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
+        :root {
+            --bg-image: url('assets/BK LOGUN.jpg');
+            /* ปรับความจางของกล่อง (Alpha จาก 0.55 เป็น 0.25) */
+            --glass-bg: rgba(15, 23, 42, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --text-color: #e2e8f0;
+            /* ปรับช่องกรอกข้อมูลให้จางลงเช่นกัน */
+            --input-bg: rgba(0, 0, 0, 0.2);
+            --input-text: #ffffff;
+            --input-placeholder: rgba(255, 255, 255, 0.6);
+            --btn-bg: #e2e8f0;
+            --btn-text: #0f172a;
+            --btn-hover-bg: #ffffff;
+            --link-color: #60a5fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f2f2f2;
+            font-family: 'Inter', sans-serif;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .box {
-            background: #fff;
-            padding: 28px;
-            border-radius: 12px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-            width: 360px;
-        }
-        .box a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 700;
-        }
-        h2 {
-            margin-bottom: 14px;
-            color: #0f2a4c;
-        }
-        label {
-            display: block;
-            margin: 10px 0 6px;
-            color: #444;
-            font-size: 0.95rem;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            color: #111;
-            background: #fff;
-        }
-        input::placeholder {
-            color: #6b7280;
-            opacity: 1;
-        }
-        button {
-            margin-top: 14px;
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            background: #0f172a;
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .note {
-            margin-top: 14px;
-            font-size: 0.9rem;
-            color: #666;
-            text-align: center;
-        }
-        .error {
-            margin-top: 10px;
-            color: #b91c1c;
-            font-size: 0.95rem;
-            text-align: center;
-            line-height: 1.4;
+            min-height: 100vh;
+            color: var(--text-color);
         }
 
-        /* Dark Theme Styles */
-        body.dark-theme {
-            background: #050816;
+        /* Dark Overlay บนพื้นหลัง */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            z-index: 1;
+        }
+
+        /* กล่องล็อกอิน Glassmorphic ที่จางลง */
+        .box {
+            position: relative;
+            background: var(--glass-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+            width: 100%;
+            max-width: 400px;
+            z-index: 2;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* สไตล์กลุ่ม Input */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--input-placeholder);
+            font-size: 1.1rem;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: var(--input-text);
+            background: var(--input-bg);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .input-group input::placeholder {
+            color: var(--input-placeholder);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            background: rgba(0, 0, 0, 0.35);
+            border-color: rgba(96, 165, 250, 0.6);
+        }
+
+        .input-group input:focus + i {
+            color: #60a5fa;
+        }
+
+        /* ไอคอนเปิด/ปิดรหัสผ่าน */
+        #togglePassword {
+            left: auto;
+            right: 15px;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        /* ปุ่ม Login */
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            border-radius: 999px;
+            border: none;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--btn-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ข้อความด้านล่าง */
+        .note {
+            margin-top: 20px;
+            font-size: 0.9rem;
             color: #e2e8f0;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
-        body.dark-theme .box {
-            background: rgba(15,23,42,0.96);
-            box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+
+        .note a {
+            color: var(--link-color);
+            text-decoration: none;
+            font-weight: 600;
         }
-        body.dark-theme h2 {
-            color: #f8fafc;
+        .note a:hover {
+            text-decoration: underline;
         }
-        body.dark-theme label {
-            color: #cbd5e1;
+
+        /* ข้อความ Error */
+        .error {
+            margin-bottom: 15px;
+            color: #f87171;
+            font-size: 0.95rem;
+            background: rgba(239, 68, 68, 0.25);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            display: none;
         }
-        body.dark-theme input {
-            background: rgba(15,23,42,0.92);
-            border: 1px solid rgba(148,163,184,0.22);
-            color: #e2e8f0;
-        }
-        body.dark-theme input::placeholder {
-            color: rgba(226,232,240,0.65);
-        }
-        body.dark-theme button {
-            background: #2563eb;
-        }
-        body.dark-theme .note {
-            color: #94a3b8;
+
+        @media (max-width: 480px) {
+            .box {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            h2 {
+                font-size: 1.75rem;
+            }
         }
     </style>
 </head>
 <body>
-    <script>
-        (function(){
-            const storedTheme = localStorage.getItem('spechub_theme');
-            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : (prefersDark ? 'dark' : 'light');
-            if (theme === 'dark') {
-                document.body.classList.add('dark-theme');
-            }
-        })();
-    </script>
 
     <div class="box">
-        <h2>Login to SPEC HUB</h2>
+        <h2>Login</h2>
+        
+        <!-- ส่วนแสดง Error -->
+        <div class="error" id="loginError"></div>
+
         <form id="loginForm">
-            <label for="username">Username</label>
-            <input id="username" name="username" placeholder="ตัวอย่าง: admin" required>
-            <label for="password">Password</label>
-            <input id="password" name="password" type="password" placeholder="รหัสผ่าน" required>
+            <!-- Username -->
+            <div class="input-group">
+                <input id="username" name="username" placeholder="Username" autocomplete="off" required>
+                <i class="fas fa-user"></i>
+            </div>
+            
+            <!-- Password -->
+            <div class="input-group">
+                <input id="password" name="password" type="password" placeholder="Password" required>
+                <i class="fas fa-lock"></i>
+                <i class="fas fa-eye-slash" id="togglePassword"></i>
+            </div>
+
             <button type="submit">Login</button>
         </form>
-        <div class="error" id="loginError" style="display:none;"></div>
-        <div class="note">ยังไม่มีบัญชี? <a href="Signup.html">สมัครสมาชิก</a> ก่อนใช้งาน</div>
+
+        <div class="note">ยังไม่มีบัญชี? <a href="Signup.html">สมัครสมาชิก</a></div>
     </div>
 
     <script>
+        // --- ระบบเปิด/ปิดการมองเห็นรหัสผ่าน ---
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // --- ระบบ Draft & Login ---
+        const LOGIN_DRAFT_KEY = 'spechub_login_draft';
+        const userInput = document.getElementById('username');
+        const passInput = document.getElementById('password');
+
+        function saveLoginDraft() {
+            const draft = {
+                username: userInput.value,
+                password: passInput.value
+            };
+            localStorage.setItem(LOGIN_DRAFT_KEY, JSON.stringify(draft));
+        }
+
+        function loadLoginDraft() {
+            const saved = localStorage.getItem(LOGIN_DRAFT_KEY);
+            if (saved) {
+                try {
+                    const draft = JSON.parse(saved);
+                    if (draft.username !== undefined) userInput.value = draft.username;
+                    if (draft.password !== undefined) passInput.value = draft.password;
+                } catch (e) {
+                    console.error("Error loading login draft", e);
+                }
+            }
+        }
+
+        function clearLoginDraft() {
+            localStorage.removeItem(LOGIN_DRAFT_KEY);
+        }
+
         function showError(message) {
             const errorEl = document.getElementById('loginError');
             if (!errorEl) return;
@@ -138,47 +275,68 @@
             errorEl.style.display = message ? 'block' : 'none';
         }
 
+        userInput.addEventListener('input', saveLoginDraft);
+        passInput.addEventListener('input', saveLoginDraft);
+        document.addEventListener('DOMContentLoaded', loadLoginDraft);
+
         document.getElementById('loginForm').addEventListener('submit', async function(e){
             e.preventDefault();
             showError('');
 
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value;
+            const u = userInput.value.trim();
+            const p = passInput.value;
 
-            // 1. Bypass ตรวจสอบ Admin แบบ Hardcode
-            if (u === 'admin1234' && p.trim() !== '') {
-                localStorage.setItem('spechub_user', 'admin1234');
-                window.location = 'ADMIN.html';
-                return;
+            // Bypass Admin เฉพาะเมื่อ Username เป็น admin1234 และ Password เป็น PAKPOOM1234
+            if (u === 'admin1234') {
+                if (p === 'PAKPOOM1234') {
+                    clearLoginDraft();
+                    localStorage.setItem('spechub_user', 'admin1234');
+                    window.location = 'ADMIN.html';
+                    return;
+                } else {
+                    showError('Password สำหรับ Admin ไม่ถูกต้อง');
+                    return;
+                }
             }
 
-            // 2. ส่งข้อมูลไปตรวจสอบที่ Backend บน Render
+            // Backend Fetch
             try {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.textContent;
+                submitBtn.textContent = 'กำลังตรวจสอบ...';
+                submitBtn.disabled = true;
+
                 const response = await fetch('https://spec-hub.onrender.com/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: u, password: p })
                 });
 
-                // ตรวจสอบกรณีไม่พบ API Endpoint บนเซิร์ฟเวอร์ (404)
+                submitBtn.textContent = originalBtnText;
+                submitBtn.disabled = false;
+
                 if (response.status === 404) {
-                    showError('ไม่พบ Endpoint /api/login บน Backend (HTTP 404) กรุณาตรวจสอบการตั้งค่า Route');
+                    showError('ไม่พบ Endpoint /api/login บน Backend (HTTP 404)');
                     return;
                 }
 
                 const data = await response.json();
 
                 if (!response.ok) {
-                    showError(data.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+                    showError(data.message || 'Username หรือ Password ไม่ถูกต้อง');
                     return;
                 }
 
-                // ล็อกอินสำเร็จ
+                clearLoginDraft();
                 localStorage.setItem('spechub_user', data.username);
                 window.location = 'HOME.html';
 
             } catch (error) {
-                showError('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ โปรดตรวจสอบว่า backend ทำงานอยู่');
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Login';
+                submitBtn.disabled = false;
+                
+                showError('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ โปรดตรวจสอบอินเทอร์เน็ต');
             }
         });
     </script>

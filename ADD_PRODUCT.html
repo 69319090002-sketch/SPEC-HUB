@@ -3,79 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPEC HUB - เพิ่ม/แก้ไขข้อมูลอุปกรณ์</title>
+    <title>SPEC HUB - เสนอความคิดเห็น & คำขออุปกรณ์</title>
     
-    <!-- 🛡️ Security Check: อนุญาตเฉพาะ admin1234 เท่านั้น -->
-    <script>
-        (function enforceAdminOnly() {
-            const currentUser = localStorage.getItem('spechub_user');
-            if (!currentUser || currentUser !== 'admin1234') {
-                alert('⛔ คุณไม่มีสิทธิ์เข้าถึงหน้านี้! (สำหรับ admin1234 เท่านั้น)');
-                window.location.replace('HOME.html');
-            }
-        })();
-    </script>
-
+    <!-- เพิ่ม Favicon ตรงนี้เพื่อแก้ข้อผิดพลาด 404 favicon.ico -->
+    <link rel="icon" type="image/png" href="assets/LOGO SPECHUB.png">
+    
+    <!-- Google Fonts & Firebase SDK -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="theme-style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; color: #1e293b; }
-        
-        .page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        
-        /* Header Navbar */
-        header {
-            width: 100%; max-width: 1200px; display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 24px; background: rgba(255,255,255,0.9); border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 30px; flex-wrap: wrap; gap: 15px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .brand { font-size: 1.5rem; font-weight: 800; letter-spacing: 2px; color: #2563eb; text-decoration: none; }
-        nav { display: flex; gap: 15px; align-items: center; }
-        nav a { text-decoration: none; color: #334155; font-weight: 600; font-size: 0.95rem; }
-        nav a.active { color: #2563eb !important; font-weight: 800; }
 
-        .header-actions { display: flex; align-items: center; gap: 12px; }
+        body {
+            background: linear-gradient(rgba(10, 15, 30, 0.4), rgba(10, 15, 30, 0.6)),
+                        url('assets/BK%20LOGUN.jpg') center/cover no-repeat fixed;
+            color: #f8fafc;
+            min-height: 100vh;
+            position: relative;
+        }
 
-        .container { width: 100%; max-width: 1200px; }
-        .card { background: white; padding: 28px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 25px; }
-        h2 { color: #2563eb; margin-bottom: 20px; font-size: 1.4rem; }
-        
-        /* Form Styling */
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+        }
+
+        /* Header Style */
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            padding: 14px 28px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        nav {
+            display: flex !important;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* เมนูทั่วไป */
+        nav a,
+        nav a:visited,
+        nav a.admin-btn-nav,
+        nav a.add-data-btn-nav {
+            text-decoration: none !important;
+            color: #cbd5e1 !important;
+            font-weight: 500 !important;
+            font-size: 0.95rem;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+            border: 1px solid transparent !important;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        nav a:hover,
+        nav a.admin-btn-nav:hover,
+        nav a.add-data-btn-nav:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* เมนู Active สไตล์แบบเดียวกับ CPU.html */
+        nav a.active,
+        nav a.add-data-btn-nav.active {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            background: rgba(59, 130, 246, 0.25) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        .header-actions a,
+        .header-actions button.auth-btn {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 10px 22px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header-actions a:hover,
+        .header-actions button.auth-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8), 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.35rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         .form-group { margin-bottom: 15px; }
         .form-group.full-width { grid-column: 1 / -1; }
-        label { display: block; font-weight: 700; margin-bottom: 6px; font-size: 0.9rem; }
-        input, select, textarea {
-            width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px;
-            font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+        label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 0.95rem; color: #ffffff; }
+        
+        textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+            color: #f8fafc;
+            background-color: rgba(15, 23, 42, 0.6);
+            resize: vertical;
         }
-        input:focus, select:focus, textarea:focus { border-color: #2563eb; }
-        
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-submit { background: #2563eb; color: white; padding: 10px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-submit:hover { background: #1d4ed8; }
-        .btn-cancel { background: #64748b; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; }
 
-        /* Search & Table */
-        .search-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 0.95rem; }
-        th { background: #f8fafc; font-weight: 700; }
-        
-        .btn-sm { padding: 6px 12px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
-        .btn-edit { background: #eab308; color: white; }
-        .btn-delete { background: #ef4444; color: white; }
+        textarea::placeholder { color: #94a3b8; }
+        textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
 
-        /* ซ่อนส่วนเฉพาะ Admin เป็นค่าเริ่มต้น */
-        .admin-only { display: none !important; }
+        .btn-submit {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            padding: 14px 28px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
+        }
 
-        /* Dark Mode Support */
-        body.dark-mode { background: #0f172a; color: #f8fafc; }
-        body.dark-mode header, body.dark-mode .card { background: #1e293b; }
-        body.dark-mode nav a { color: #cbd5e1; }
-        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #0f172a; color: #fff; border-color: #334155; }
-        body.dark-mode th { background: #0f172a; color: #fff; }
-        body.dark-mode td { border-color: #334155; }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .login-notice {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .login-notice p {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        .btn-login-now {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff !important;
+            padding: 12px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .btn-login-now:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8);
+        }
+
+        .feedback-list { display: flex; flex-direction: column; gap: 16px; margin-top: 15px; }
+        .feedback-item {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .feedback-item:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .feedback-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .user-badge { font-weight: 600; color: #60a5fa; font-size: 1rem; }
+        .feedback-date { font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px; }
+        .feedback-content { font-size: 0.95rem; line-height: 1.6; color: #e2e8f0; white-space: pre-line; word-break: break-word; }
+
+        .btn-delete {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .admin-only, .user-only { display: none !important; }
+
+        @media (max-width: 992px) {
+            header { grid-template-columns: 1fr; justify-items: center; }
+        }
     </style>
 </head>
 <body>
@@ -90,241 +304,287 @@
             <a href="CASE.html">CASE</a>
             <a href="MAIN BORD.html">MAIN BORD</a>
             <a href="COMPARE.html">COMPARE</a>
-            <!-- กำหนด class admin-only เพื่อซ่อน/แสดง ตามสิทธิ์ -->
             <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
-            <a href="ADD_PRODUCT.html" class="add-data-btn-nav active admin-only">➕ ADD DATA</a>
+            <a href="ADD_PRODUCT.html" class="add-data-btn-nav user-only active">💬 SUGGESTIONS</a>
         </nav>
         <div class="header-actions">
-            <button id="themeToggleBtn" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:20px; cursor:pointer;">🌙 Dark</button>
-            <a href="login.html" id="auth-action" style="text-decoration:none; font-weight:bold; color:#2563eb;">Login</a>
+            <a href="login.html" id="auth-action">Login</a>
         </div>
     </header>
 
     <div class="container">
-        <!-- ฟอร์ม กรอก/แก้ไข ข้อมูล -->
-        <div class="card">
-            <h2 id="formTitle">➕ เพิ่มข้อมูลอุปกรณ์ใหม่</h2>
-            <form id="hardwareForm">
-                <input type="hidden" id="editId">
+        <!-- 1. ฟอร์มเสนอความคิดเห็น -->
+        <div id="feedbackFormCard" class="card user-only">
+            <h2>💬 เสนอความคิดเห็น / เสนอเพิ่มอุปกรณ์ใหม่</h2>
+            <form id="feedbackForm">
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>หมวดหมู่สเปก:</label>
-                        <select id="category" required>
-                            <option value="CPU">CPU</option>
-                            <option value="GPU">GPU</option>
-                            <option value="CASE">CASE</option>
-                            <option value="MAINBOARD">MAINBOARD</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>ชื่อรุ่น (Model Name):</label>
-                        <input type="text" id="name" placeholder="เช่น Intel Core i5-13600K" required>
-                    </div>
-                    <div class="form-group">
-                        <label>แบรนด์ (Brand):</label>
-                        <input type="text" id="brand" placeholder="เช่น Intel, AMD, ASUS">
-                    </div>
-                    <div class="form-group">
-                        <label>ราคา (บาท):</label>
-                        <input type="number" id="price" placeholder="เช่น 11500" required>
-                    </div>
                     <div class="form-group full-width">
-                        <label>ลิงก์รูปภาพ (Image URL):</label>
-                        <input type="url" id="image_url" placeholder="https://example.com/image.jpg">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>รายละเอียด / สเปกเพิ่มเติม:</label>
-                        <textarea id="detail" rows="3" placeholder="ระบุรายละเอียด เช่น Socket, Cores/Threads, VRAM..."></textarea>
+                        <label for="message">รายละเอียดความคิดเห็น / รุ่นอุปกรณ์ที่อยากให้เพิ่ม:</label>
+                        <textarea id="message" rows="4" placeholder="ระบุรุ่นอุปกรณ์ที่อยากให้เพิ่ม หรือข้อเสนอแนะในการพัฒนาเว็บ..." required></textarea>
                     </div>
                 </div>
-                <div class="btn-group">
-                    <button type="submit" class="btn-submit" id="saveBtn">บันทึกข้อมูล</button>
-                    <button type="button" class="btn-cancel" id="cancelBtn" onclick="resetForm()">ยกเลิก</button>
-                </div>
+                <button type="submit" class="btn-submit">🚀 ส่งความคิดเห็น</button>
             </form>
         </div>
 
-        <!-- รายการข้อมูลออนไลน์ + ค้นหา -->
-        <div class="card">
-            <h2>🔍 จัดการและค้นหาข้อมูลในระบบ</h2>
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="พิมพ์ชื่อรุ่น หรือแบรนด์เพื่อค้นหา..." oninput="fetchHardware()">
-                <select id="filterCategory" onchange="fetchHardware()" style="width: 180px;">
-                    <option value="">ทั้งหมดทุกหมวด</option>
-                    <option value="CPU">CPU</option>
-                    <option value="GPU">GPU</option>
-                    <option value="CASE">CASE</option>
-                    <option value="MAINBOARD">MAINBOARD</option>
-                </select>
-            </div>
+        <!-- 2. การ์ดแจ้งเตือนกรณีผู้ใช้ยังไม่ได้ล็อกอิน -->
+        <div id="loginNoticeCard" class="card login-notice">
+            <h2>🔒 เข้าสู่ระบบเพื่อเสนอความคิดเห็น</h2>
+            <p>คุณต้องเข้าสู่ระบบก่อน จึงจะสามารถเสนอความคิดเห็น หรือส่งคำขอเพิ่มอุปกรณ์ใหม่ได้</p>
+            <a href="login.html" class="btn-login-now">🔑 เข้าสู่ระบบทันที</a>
+        </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>หมวดหมู่</th>
-                        <th>ชื่อรุ่น</th>
-                        <th>แบรนด์</th>
-                        <th>ราคา</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="hardwareList">
-                    <tr><td colspan="5" style="text-align:center;">กำลังโหลดข้อมูล...</td></tr>
-                </tbody>
-            </table>
+        <!-- 3. รายการความคิดเห็นทั้งหมด -->
+        <div class="card">
+            <h2>📌 รายการความคิดเห็นและคำขอทั้งหมด</h2>
+            <div id="feedbackContainer" class="feedback-list">
+                <!-- ข้อมูลจาก Firebase Database -->
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // สคริปต์ตรวจสอบการ Login และแสดงชื่อผู้ใช้/ปุ่ม Admin
-    (function(){
-        function updateAuth(){
-            const auth = document.getElementById('auth-action');
-            const adminElements = document.querySelectorAll('.admin-only');
-            const user = localStorage.getItem('spechub_user');
-            
-            if(!auth) return;
-            
-            if(user){
-                auth.textContent = user;
-                auth.href = '#';
-                auth.onclick = function(e){ 
-                    e.preventDefault(); 
-                    if(confirm('ต้องการออกจากระบบใช่หรือไม่?')){
-                        localStorage.removeItem('spechub_user'); 
-                        window.location.replace('HOME.html');
-                    }
-                };
+    const firebaseConfig = {
+        databaseURL: "https://gen-lang-client-0100210117-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
 
-                if(user === 'admin1234'){
-                    adminElements.forEach(el => {
-                        el.style.setProperty('display', 'inline-block', 'important');
-                    });
-                } else {
-                    adminElements.forEach(el => {
-                        el.style.setProperty('display', 'none', 'important');
-                    });
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    // -------------------------------------------------------------
+    // ตั้งค่า Telegram Bot เพื่อรับแจ้งเตือนเข้ามือถือ
+    // -------------------------------------------------------------
+    const TELEGRAM_BOT_TOKEN = '8499180082:AAFPL1-YLurXpIdBgLFBqStfALwCEOie-BI';
+    const TELEGRAM_CHAT_ID = '8615304733';
+
+    function sendTelegramNotification(username, message) {
+        if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN.includes('ใส่_BOT_TOKEN')) {
+            console.log(' Telegram Notification Skill: ยังไม่ได้ตั้งค่า Token');
+            return;
+        }
+
+        const text = `🔔 *มีข้อความเสนอแนะนำเข้าใหม่!*\n\n👤 *ผู้ใช้:* ${username}\n💬 *ข้อความ:* ${message}`;
+        
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: text,
+                parse_mode: 'Markdown'
+            })
+        })
+        .then(res => res.json())
+        .catch(err => console.error('Telegram Notify Error:', err));
+    }
+    // -------------------------------------------------------------
+
+    let isAdmin = false;
+    const DRAFT_STORAGE_KEY = 'spechub_suggestion_draft';
+
+    function saveDraft() {
+        const messageEl = document.getElementById('message');
+        if (!messageEl) return;
+        const draft = { message: messageEl.value };
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    }
+
+    function loadDraft() {
+        const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (saved) {
+            try {
+                const draft = JSON.parse(saved);
+                const messageEl = document.getElementById('message');
+                if (draft.message !== undefined && messageEl) {
+                    messageEl.value = draft.message;
                 }
+            } catch (e) {
+                console.error("Error loading draft", e);
+            }
+        }
+    }
+
+    function clearDraft() {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+
+    function getCurrentPage() {
+        return window.location.pathname.split('/').pop() || 'HOME.html';
+    }
+
+    function checkAuth() {
+        const auth = document.getElementById('auth-action');
+        const adminElements = document.querySelectorAll('.admin-only');
+        const userElements = document.querySelectorAll('.user-only');
+        const loginNotice = document.getElementById('loginNoticeCard');
+        
+        const userSession = JSON.parse(localStorage.getItem('spechub_session')) || null;
+        const legacyUser = localStorage.getItem('spechub_user');
+        const user = userSession ? userSession.username : legacyUser;
+        
+        let role = 'user';
+        if (userSession && userSession.role) {
+            role = userSession.role;
+        } else if (user === 'admin1234' || user === 'admin') {
+            role = 'admin';
+        }
+
+        if (!auth) return;
+
+        if (user) {
+            auth.textContent = `👤 ${user} (Logout)`;
+            auth.href = '#';
+            auth.onclick = function (e) {
+                e.preventDefault();
+                if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) {
+                    localStorage.removeItem('spechub_session');
+                    localStorage.removeItem('spechub_user');
+                    window.location = getCurrentPage();
+                }
+            };
+
+            userElements.forEach(el => {
+                el.style.setProperty('display', 'inline-flex', 'important');
+            });
+
+            if (document.getElementById('feedbackFormCard')) {
+                document.getElementById('feedbackFormCard').style.setProperty('display', 'block', 'important');
+            }
+
+            if (loginNotice) {
+                loginNotice.style.setProperty('display', 'none', 'important');
+            }
+
+            if (role === 'admin' || user === 'admin1234' || user === 'admin') {
+                isAdmin = true;
+                adminElements.forEach(el => {
+                    el.style.setProperty('display', 'inline-flex', 'important');
+                });
             } else {
-                auth.textContent = 'Login';
-                auth.href = 'login.html';
-                auth.onclick = null;
+                isAdmin = false;
                 adminElements.forEach(el => {
                     el.style.setProperty('display', 'none', 'important');
                 });
             }
+        } else {
+            auth.textContent = 'Login';
+            auth.href = 'login.html';
+            auth.onclick = null;
+            isAdmin = false;
+
+            userElements.forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+            });
+            adminElements.forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+            });
+
+            if (loginNotice) {
+                loginNotice.style.setProperty('display', 'block', 'important');
+            }
         }
-        updateAuth();
-    })();
+    }
 
-    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:5000/api/hardware'
-        : 'https://spec-hub.onrender.com/api/hardware';
+    function listenToFeedbacks() {
+        const container = document.getElementById('feedbackContainer');
 
-    let hardwareData = [];
+        database.ref('feedbacks').on('value', (snapshot) => {
+            const data = snapshot.val();
 
-    // ดึงและแสดงรายการสเปก
-    async function fetchHardware() {
-        const search = document.getElementById('searchInput').value;
-        const category = document.getElementById('filterCategory').value;
-
-        try {
-            const res = await fetch(`${API_URL}?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`);
-            hardwareData = await res.json();
-            
-            const tbody = document.getElementById('hardwareList');
-            if (hardwareData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">ไม่พบข้อมูลอุปกรณ์</td></tr>';
+            if (!data) {
+                container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding: 20px;">ยังไม่มีความคิดเห็นในขณะนี้ เป็นคนแรกที่เสนอแนะกันเข้ามาได้เลย!</div>';
                 return;
             }
 
-            tbody.innerHTML = hardwareData.map(item => `
-                <tr>
-                    <td><b>${item.category}</b></td>
-                    <td>${item.name}</td>
-                    <td>${item.brand || '-'}</td>
-                    <td>${Number(item.price).toLocaleString()} ฿</td>
-                    <td>
-                        <button class="btn-sm btn-edit" onclick="setupEdit(${item.id})">✏️ แก้ไข</button>
-                        <button class="btn-sm btn-delete" onclick="deleteItem(${item.id})">🗑️ ลบ</button>
-                    </td>
-                </tr>
+            const feedbacks = Object.keys(data).map(key => ({
+                key: key,
+                ...data[key]
+            })).reverse();
+
+            container.innerHTML = feedbacks.map(item => `
+                <div class="feedback-item">
+                    <div class="feedback-header">
+                        <span class="user-badge">👤 ${escapeHtml(item.username)}</span>
+                    </div>
+                    <div class="feedback-date">🕒 ${item.date}</div>
+                    <div class="feedback-content">${escapeHtml(item.message)}</div>
+                    
+                    ${isAdmin ? `<button class="btn-delete" onclick="deleteFeedback('${item.key}')">🗑️ ลบความคิดเห็น (Admin)</button>` : ''}
+                </div>
             `).join('');
-        } catch (err) {
-            console.error(err);
-        }
+        });
     }
 
-    // เพิ่ม / แก้ไข
-    document.getElementById('hardwareForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('editId').value;
-        const payload = {
-            category: document.getElementById('category').value,
-            name: document.getElementById('name').value,
-            brand: document.getElementById('brand').value,
-            price: document.getElementById('price').value,
-            image_url: document.getElementById('image_url').value,
-            detail: document.getElementById('detail').value
-        };
+    function escapeHtml(text) {
+        return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
+    }
 
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `${API_URL}/${id}` : API_URL;
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', (e) => {
+            e.preventDefault();
 
-        try {
-            const res = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            const userSession = JSON.parse(localStorage.getItem('spechub_session')) || null;
+            const currentUser = userSession ? userSession.username : localStorage.getItem('spechub_user');
+            const finalName = currentUser || 'ผู้เยี่ยมชมทั่วไป';
+            
+            const messageVal = document.getElementById('message').value.trim();
+            if (!messageVal) return;
+
+            const newFeedback = {
+                username: finalName,
+                message: messageVal,
+                date: new Date().toLocaleString('th-TH')
+            };
+
+            // 1. บันทึกลง Firebase Database
+            database.ref('feedbacks').push(newFeedback)
+                .then(() => {
+                    // 2. ยิงแจ้งเตือนเข้ามือถือผ่าน Telegram
+                    sendTelegramNotification(finalName, messageVal);
+
+                    alert('ขอบคุณสำหรับความคิดเห็น/ข้อเสนอแนะครับ!');
+                    clearDraft();
+                    feedbackForm.reset();
+                })
+                .catch(error => {
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + error.message);
+                });
+        });
+    }
+
+    function deleteFeedback(key) {
+        if (!isAdmin) {
+            alert('คุณไม่มีสิทธิ์ในการลบความคิดเห็นนี้!');
+            return;
+        }
+
+        if (!confirm('ยืนยันว่าต้องการลบความคิดเห็นนี้ใช่หรือไม่?')) return;
+
+        database.ref('feedbacks/' + key).remove()
+            .then(() => {
+                alert('ลบความคิดเห็นเรียบร้อยแล้ว');
+            })
+            .catch(error => {
+                alert('เกิดข้อผิดพลาดในการลบ: ' + error.message);
             });
-            const result = await res.json();
-            alert(result.message || 'บันทึกเรียบร้อย');
-            resetForm();
-            fetchHardware();
-        } catch (err) {
-            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+    }
+
+    window.onload = function() {
+        checkAuth();          
+        loadDraft();
+        listenToFeedbacks();  
+
+        const messageEl = document.getElementById('message');
+        if (messageEl) {
+            messageEl.addEventListener('input', saveDraft);
         }
-    });
-
-    function setupEdit(id) {
-        const item = hardwareData.find(h => h.id === id);
-        if (!item) return;
-
-        document.getElementById('editId').value = item.id;
-        document.getElementById('category').value = item.category;
-        document.getElementById('name').value = item.name;
-        document.getElementById('brand').value = item.brand || '';
-        document.getElementById('price').value = item.price;
-        document.getElementById('image_url').value = item.image_url || '';
-        document.getElementById('detail').value = item.detail || '';
-
-        document.getElementById('formTitle').textContent = '✏️ แก้ไขข้อมูลอุปกรณ์';
-        document.getElementById('saveBtn').textContent = 'อัปเดตข้อมูล';
-        document.getElementById('cancelBtn').style.display = 'inline-block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function resetForm() {
-        document.getElementById('hardwareForm').reset();
-        document.getElementById('editId').value = '';
-        document.getElementById('formTitle').textContent = '➕ เพิ่มข้อมูลอุปกรณ์ใหม่';
-        document.getElementById('saveBtn').textContent = 'บันทึกข้อมูล';
-        document.getElementById('cancelBtn').style.display = 'none';
-    }
-
-    async function deleteItem(id) {
-        if (!confirm('ยืนยันว่าต้องการลบข้อมูลนี้ออกจากระบบออนไลน์?')) return;
-        try {
-            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-            fetchHardware();
-        } catch (err) {
-            alert('ลบข้อมูลไม่สำเร็จ');
-        }
-    }
-
-    window.onload = fetchHardware;
+    };
 </script>
-<script src="theme-toggle.js"></script>
 </body>
 </html>

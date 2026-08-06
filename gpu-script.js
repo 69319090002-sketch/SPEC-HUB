@@ -3,13 +3,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("gpuListContainer");
     const searchInput = document.getElementById("searchInput");
     const searchButton = document.getElementById("searchBtn");
-    const suggestionsBox = document.getElementById("gpuSuggestions");
 
     // 1. ฟังก์ชันสำหรับสร้างและแสดงผลการ์ดการ์ดจอ ทั้งหมดหรือตามที่ฟิลเตอร์
     function displayGPUs(gpus) {
         container.innerHTML = "";
         
-        if (gpus.length === 0) {
+        if (!gpus || gpus.length === 0) {
             container.innerHTML = `<div class="no-result">ไม่พบข้อมูล GPU ที่คุณค้นหา</div>`;
             return;
         }
@@ -40,49 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 2. ฟังก์ชันสำหรับสร้างและควบคุมกล่องแนะนำคำค้นหา (Custom Suggestions)
-    function showSuggestions(keyword) {
-        if (keyword === '') {
-            suggestionsBox.style.display = 'none';
-            return;
-        }
-
-        const text = keyword.toLowerCase();
-        // ทำการค้นหาคำแนะนำจากทั้ง ชื่อรุ่น, แบรนด์ หรือโมเดล
-        const filtered = gpuDatabase.filter(gpu => 
-            gpu.name.toLowerCase().includes(text) ||
-            gpu.brand.toLowerCase().includes(text) ||
-            gpu.model.toLowerCase().includes(text)
-        );
-
-        // ตัดการแสดงผลแนะนำสูงสุดแค่ 3 รุ่นแรกเหมือนหน้าแรก
-        const topThree = filtered.slice(0, 3);
-
-        if (topThree.length > 0) {
-            suggestionsBox.innerHTML = '';
-            topThree.forEach(gpu => {
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.textContent = gpu.name;
-                
-                // เมื่อคลิกคำแนะนำชิ้นไหน ให้คำนั้นใส่ไปใน Input ปิดกล่อง แล้วกดฟิลเตอร์ทันที
-                div.addEventListener('click', () => {
-                    searchInput.value = gpu.name;
-                    suggestionsBox.style.display = 'none';
-                    handleSearch();
-                });
-                suggestionsBox.appendChild(div);
-            });
-            suggestionsBox.style.display = 'block';
-        } else {
-            suggestionsBox.style.display = 'none';
-        }
-    }
-
-    // 3. ฟังก์ชันจัดการระบบค้นหาแบบ Real-time
+    // 2. ฟังก์ชันจัดการระบบค้นหาแบบ Real-time
     function handleSearch() {
         const query = searchInput.value.toLowerCase().trim();
-        const filteredGPUs = gpuDatabase.filter(gpu => 
+        const filteredGPUs = (typeof gpuDatabase !== "undefined" ? gpuDatabase : []).filter(gpu => 
             gpu.name.toLowerCase().includes(query) || 
             gpu.brand.toLowerCase().includes(query) ||
             gpu.model.toLowerCase().includes(query)
@@ -90,40 +50,41 @@ document.addEventListener("DOMContentLoaded", () => {
         displayGPUs(filteredGPUs);
     }
 
-    // 4. ผูกตัวเชื่อมโยงเหตุการณ์ (Event Listeners)
+    // 3. ผูกตัวเชื่อมโยงเหตุการณ์ (Event Listeners)
     if (searchInput) {
-        // ดักเหตุการณ์การพิมพ์เพื่อทำช่องแนะนำคำค้นหา
-        searchInput.addEventListener('input', (e) => {
-            showSuggestions(e.target.value.trim());
+        searchInput.addEventListener('input', () => {
+            handleSearch();
         });
 
-        // ดักปุ่ม Enter ในช่อง Input เพื่อค้นหา
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                suggestionsBox.style.display = 'none';
                 handleSearch();
             }
         });
     }
 
-    // ดักการกดปุ่มค้นหาหลัก
     if (searchButton) {
         searchButton.addEventListener("click", () => {
-            suggestionsBox.style.display = 'none';
             handleSearch();
         });
     }
 
-    // สั่งปิดกล่องคำแนะนำเมื่อผู้ใช้นำเมาส์ไปคลิกพื้นที่อื่นๆ ด้านนอกกรอบค้นหา
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-container')) {
-            suggestionsBox.style.display = 'none';
+    function checkIncomingSearch() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchParam = urlParams.get('search');
+        if (searchParam && searchInput) {
+            searchInput.value = searchParam;
+            handleSearch();
+            return true;
         }
-    });
+        return false;
+    }
 
-    // 5. รันข้อมูลให้แสดงผลทั้งหมดในครั้งแรกที่เปิดหน้าเว็บขึ้นมา
+    // 5. รันข้อมูลให้แสดงผลทั้งหมดในครั้งแรกที่เปิดเว็บขึ้นมา
     if (typeof gpuDatabase !== "undefined") {
-        displayGPUs(gpuDatabase);
+        if (!checkIncomingSearch()) {
+            displayGPUs(gpuDatabase);
+        }
     } else {
         container.innerHTML = `<div class="no-result">เกิดข้อผิดพลาด: ไม่พบข้อมูลใน gpuDatabase</div>`;
     }
