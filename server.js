@@ -6,47 +6,59 @@ require('dotenv').config();
 
 const app = express();
 
-// อนุญาต CORS แบบครอบคลุมทุก Header/Method
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// 🤖 ตั้งค่า Google Gemini AI สำหรับตรวจกรองชื่อผู้ใช้
+// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ + In-Memory Cache (ความเร็วสูงสุด)
 // -----------------------------------------------------------------
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const usernameCache = new Map(); // แคชผลการตรวจในหน่วยความจำ RAM
 
 async function validateUsernameWithAI(username) {
     if (!process.env.GEMINI_API_KEY) {
-        console.warn('⚠️ GEMINI_API_KEY ยังไม่ได้ตั้งค่าใน Environment');
+        console.warn('⚠️ ไม่พบ GEMINI_API_KEY ในไฟล์ .env');
         return { isSafe: true };
     }
 
+    const key = username.toLowerCase().trim();
+
+    // 1. ตรวจสอบใน Cache ก่อน (ตอบกลับทันทีใน 0 ms)
+    if (usernameCache.has(key)) {
+        const cachedSafe = usernameCache.get(key);
+        console.log(`⚡ [Cache Hit] "${username}" -> ${cachedSafe ? 'SAFE' : 'UNSAFE'}`);
+        return { isSafe: cachedSafe };
+    }
+
     try {
-        const prompt = `คุณคือระบบ Content Moderator ตรวจสอบชื่อผู้ใช้ (Username)
-วิเคราะห์ว่าชื่อผู้ใช้ "${username}" มีลักษณะดังต่อไปนี้หรือไม่:
-1. คำหยาบคาย คำด่าทอ สแลงหยาบ หรือคำผวน (ทั้งภาษาไทย ภาษาอังกฤษ หรือคาราโอเกะ)
-2. การดูถูก เหยียดหยาม บูลลี่ เชื้อชาติ เพศ ชาติพันธุ์ หรือศาสนา
-3. เนื้อหาส่อไปในทางเพศ ลามก หรืออนาจาร
-4. การพิมพ์หลบคำ เช่น ใช้ตัวเลขหรือสัญลักษณ์แทนตัวอักษรเพื่อสื่อถึงคำหยาบ
-
-ตอบเป็นคำเดียวเท่านั้น:
-- หากพบความไม่เหมาะสม ให้ตอบว่า "UNSAFE"
-- หากปลอดภัยและเหมาะสม ให้ตอบว่า "SAFE"`;
-
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
+            model: 'gemini-3.6-flash',
+            contents: `Username to check: "${username}"`,
             config: {
-                temperature: 0.0 // ตั้งค่า 0 เพื่อความแม่นยำและไม่เดาสุ่ม
+                temperature: 0.0,
+                maxOutputTokens: 2,
+                systemInstruction: `You are a strict username content moderator.
+Review the username for:
+1. Profanity, slurs, swear words, insults, derogatory terms, slang, spoonerisms/euphemisms (Thai/English/Isan/Northern/Southern/Karaoke).
+2. Bullying, hate speech, body shaming, offensive or vulgar language.
+3. Sexual content, anatomy, explicit words.
+4. Leetspeak or symbol bypasses.
+
+Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No extra words.`
             }
         });
 
-        const result = response.text ? response.text.trim().toUpperCase() : 'SAFE';
-        return { isSafe: !result.includes('UNSAFE') };
+        const rawResult = (response.text || '').trim().toUpperCase();
+        const isSafe = !rawResult.includes('UNSAFE');
+
+        // บันทึกลง Cache
+        usernameCache.set(key, isSafe);
+
+        console.log(`⚡ [Fast-AI] "${username}" -> ${isSafe ? '✅ ผ่าน (SAFE)' : '⛔ บล็อก (UNSAFE)'}`);
+        return { isSafe };
     } catch (error) {
-        console.error('AI Moderation Error:', error.message);
-        // หาก API ขัดข้อง ให้ผ่านไปก่อนเพื่อป้องกันระบบสมัครสมาชิกล่ม
+        console.error('❌ AI Moderation Error:', error.message);
         return { isSafe: true };
     }
 }
@@ -68,16 +80,9 @@ pool.connect((err, client, release) => {
     }
 });
 
-// ==========================================
-// ROUTES
-// ==========================================
-
-// เช็กว่าเซิร์ฟเวอร์ตื่นอยู่ไหม
-app.get('/', (req, res) => {
-    res.send('🚀 SPEC HUB Backend is RUNNING!');
-});
-
-// 1. SIGNUP (พร้อมระบบตรวจจับชื่อผู้ใช้ด้วย AI)
+// -----------------------------------------------------------------
+// 1. SIGNUP API (ทำงานคู่ขนาน AI + DB เร็วขึ้น 2 เท่า)
+// -----------------------------------------------------------------
 const handleSignup = async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -85,27 +90,46 @@ const handleSignup = async (req, res) => {
         return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบทุกช่อง' });
     }
 
+    const cleanUsername = username.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
-        // ให้ AI ตรวจสอบความเหมาะสมของชื่อผู้ใช้ก่อน
-        const { isSafe } = await validateUsernameWithAI(username.trim());
-        if (!isSafe) {
+        // ⚡ รันตรวจ AI และตรวจฐานข้อมูลพร้อมกันทันที
+        const [aiCheck, checkUser] = await Promise.all([
+            validateUsernameWithAI(cleanUsername),
+            pool.query(
+                'SELECT username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2)',
+                [cleanUsername, cleanEmail]
+            )
+        ]);
+
+        // ขั้นตอนที่ 1: เช็กผลการตรวจของ AI
+        if (!aiCheck.isSafe) {
             return res.status(400).json({ 
-                message: '❌ ชื่อผู้ใช้นี้ไม่ผ่านการตรวจสอบ (มีคำหยาบคาย ดูถูก หรือไม่เหมาะสม)' 
+                message: '❌ ชื่อบัญชีไม่เหมาะสม (มีคำหยาบคาย ดูถูก หรือคำไม่สุภาพ)' 
             });
         }
 
-        const checkUser = await pool.query(
-            'SELECT * FROM users WHERE username = $1 OR email = $2',
-            [username.trim(), email.trim().toLowerCase()]
-        );
-
+        // ขั้นตอนที่ 2: เช็กข้อมูลซ้ำในฐานข้อมูล
         if (checkUser.rows.length > 0) {
-            return res.status(400).json({ message: 'Username หรือ Email นี้มีผู้ใช้งานในระบบแล้ว' });
+            const isUsernameTaken = checkUser.rows.some(u => u.username.toLowerCase() === cleanUsername.toLowerCase());
+            const isEmailTaken = checkUser.rows.some(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
+
+            if (isUsernameTaken && isEmailTaken) {
+                return res.status(400).json({ message: '❌ ทั้งชื่อผู้ใช้และอีเมลนี้มีผู้ใช้งานในระบบแล้ว' });
+            }
+            if (isUsernameTaken) {
+                return res.status(400).json({ message: '❌ ชื่อผู้ใช้นี้มีผู้ใช้งานในระบบแล้ว' });
+            }
+            if (isEmailTaken) {
+                return res.status(400).json({ message: '❌ อีเมลนี้มีผู้ใช้งานในระบบแล้ว' });
+            }
         }
 
+        // ขั้นตอนที่ 3: บันทึกผู้ใช้ใหม่
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
-            [username.trim(), email.trim().toLowerCase(), password]
+            [cleanUsername, cleanEmail, password]
         );
 
         res.status(201).json({
@@ -121,7 +145,9 @@ const handleSignup = async (req, res) => {
 app.post('/api/signup', handleSignup);
 app.post('/signup', handleSignup);
 
-// 2. LOGIN
+// -----------------------------------------------------------------
+// 2. LOGIN API
+// -----------------------------------------------------------------
 const handleLogin = async (req, res) => {
     const { username, password } = req.body;
 
@@ -157,7 +183,9 @@ const handleLogin = async (req, res) => {
 app.post('/api/login', handleLogin);
 app.post('/login', handleLogin);
 
-// 3. GET USERS (สำหรับ Admin)
+// -----------------------------------------------------------------
+// 3. ADMIN APIs
+// -----------------------------------------------------------------
 app.get('/api/users', async (req, res) => {
     try {
         const result = await pool.query('SELECT id, username, email, password, created_at FROM users ORDER BY id ASC');
@@ -167,28 +195,23 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// 4. EDIT PASSWORD
 app.put('/api/users/:id/password', async (req, res) => {
     const { id } = req.params;
     const { newPassword } = req.body;
 
     try {
-        await pool.query(
-            'UPDATE users SET password = $1 WHERE id = $2 RETURNING id, username',
-            [newPassword.trim(), id]
-        );
-        res.json({ message: `แก้ไขรหัสผ่านสำเร็จ!` });
+        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [newPassword.trim(), id]);
+        res.json({ message: 'แก้ไขรหัสผ่านสำเร็จ!' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// 5. DELETE USER
 app.delete('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
         await pool.query('DELETE FROM users WHERE id = $1', [id]);
-        res.json({ message: `ลบบัญชีเรียบร้อยแล้ว!` });
+        res.json({ message: 'ลบบัญชีเรียบร้อยแล้ว!' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

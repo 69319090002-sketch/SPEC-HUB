@@ -1,12 +1,14 @@
-﻿<!DOCTYPE html>
-<html lang="th">
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPEC HUB - CPU</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="assets/LOGO%20SPECHUB.png">
+    <title>SPEC HUB - CASE</title>
+
+    <!-- 📌 โลโก้ Favicon บนแท็บบราว์เซอร์ -->
+    <link rel="icon" type="image/png" href="assets/LOGO SPECHUB.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="theme-style.css">
     <style>
@@ -33,14 +35,14 @@
             padding: 24px;
         }
 
-        /* Header Style จัดให้อยู่แถวเดียว */
+        /* Header Style ถอดแบบจาก HOME / CPU / GPU 100% */
         header {
             width: 100%;
             max-width: 1200px;
             display: grid;
             grid-template-columns: auto 1fr auto;
             align-items: center;
-            padding: 14px 24px;
+            padding: 14px 28px;
             background: rgba(15, 23, 42, 0.45);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -48,7 +50,7 @@
             border-radius: 16px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             margin-bottom: 30px;
-            gap: 16px;
+            gap: 20px;
         }
 
         /* Brand Logo */
@@ -66,24 +68,23 @@
 
         nav {
             display: flex !important;
-            gap: 8px;
+            gap: 16px;
             align-items: center;
             justify-content: center;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
         }
 
-        /* เมนูทั่วไป */
+        /* เมนูตั้งค่าสเปคเดียวกับ CPU / GPU / HOME */
         nav a,
         nav a:visited,
         nav a.admin-btn-nav,
         nav a.add-data-btn-nav {
-            text-decoration: none !important;
+            text-decoration: none;
             color: #cbd5e1 !important;
             font-weight: 500 !important;
-            font-size: 0.92rem;
-            padding: 6px 10px !important;
-            border-radius: 8px !important;
-            border: 1px solid transparent !important;
+            font-size: 0.95rem;
+            padding: 6px 12px !important;
+            border-radius: 8px;
             transition: all 0.2s ease;
             white-space: nowrap;
             display: inline-flex;
@@ -98,15 +99,11 @@
             background: rgba(255, 255, 255, 0.08) !important;
         }
 
-        /* เมนู Active */
-        nav a.active,
-        nav a.admin-btn-nav.active,
-        nav a.add-data-btn-nav.active {
+        /* เมนู Active ตรงกับ CPU/GPU */
+        nav a.active {
             color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
             background: rgba(59, 130, 246, 0.25) !important;
             border: 1px solid rgba(59, 130, 246, 0.4) !important;
-            border-radius: 8px !important;
             font-weight: 600 !important;
         }
 
@@ -126,9 +123,9 @@
         /* ปุ่ม Login / Logout แบบเรืองแสงมาตรฐาน */
         .header-actions a,
         .header-actions button.auth-btn {
-            color: #ffffff !important;
+            color: #ffffff;
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            padding: 10px 20px;
+            padding: 10px 22px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 600;
@@ -257,7 +254,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .card-image img.product-box {
+        .card-image img {
             width: 100%;
             height: 100%;
             max-width: 100%;
@@ -270,7 +267,7 @@
             padding: 20px 22px 24px;
         }
 
-        .cpu-name {
+        .case-name {
             font-weight: 700;
             color: #ffffff;
             margin-bottom: 12px;
@@ -317,9 +314,7 @@
                 grid-template-columns: 1fr;
                 justify-items: center;
             }
-            nav {
-                flex-wrap: wrap;
-            }
+
             .cards {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -343,9 +338,9 @@
             <a href="HOME.html" class="brand">SPEC HUB</a>
             <nav>
                 <a href="HOME.html">HOME</a>
-                <a href="CPU.html" class="active">CPU</a>
+                <a href="CPU.html">CPU</a>
                 <a href="GPU.html">GPU</a>
-                <a href="CASE.html">CASE</a>
+                <a href="CASE.html" class="active">CASE</a>
                 <a href="MAIN BORD.html">MAIN BORD</a>
                 <a href="COMPARE.html">COMPARE</a>
                 <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
@@ -355,21 +350,24 @@
                 <a href="login.html" id="auth-action">Login</a>
             </div>
         </header>
+
         <section class="hero">
             <div class="hero-top">
                 <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="ค้นหา CPU ที่ต้องการ..." autocomplete="off">
+                    <input id="searchInput" type="text" placeholder="ค้นหา CASE ที่ต้องการ..." list="caseOptionsCASE" autocomplete="off">
                     <button id="searchBtn" type="button">ค้นหา</button>
                 </div>
+                <datalist id="caseOptionsCASE"></datalist>
             </div>
-
-            <div class="cards" id="cpuListContainer"></div>
+            <div id="caseListContainer" class="cards"></div>
         </section>
     </div>
 
-    <script src="cpu-data.js"></script>
-    <script src="cpu-script.js"></script>
+    <!-- โหลดข้อมูลและสคริปต์หลัก CASE -->
+    <script src="case-data.js"></script>
+    <script src="case-script.js"></script>
 
+    <!-- สคริปต์ Auth และ Search Parameter Handling ตรงตาม CPU/GPU -->
     <script>
         (function () {
             function getCurrentPage() {
@@ -406,10 +404,12 @@
                         }
                     };
 
+                    // ผู้ใช้ทั่วไปล็อกอิน -> แสดง SUGGESTIONS
                     userElements.forEach(el => {
                         el.style.setProperty('display', 'inline-flex', 'important');
                     });
 
+                    // เฉพาะ Admin -> ถึงจะแสดงปุ่ม ADMIN
                     if (role === 'admin' || user === 'admin1234' || user === 'admin') {
                         adminElements.forEach(el => {
                             el.style.setProperty('display', 'inline-flex', 'important');
@@ -437,9 +437,10 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
-            const SEARCH_DRAFT_KEY = 'spechub_cpu_search_draft';
+            const SEARCH_DRAFT_KEY = 'spechub_case_search_draft';
 
             if (searchInput) {
+                // รองรับ URL Search Parameter เช่น CASE.html?search=Lian
                 const urlParams = new URLSearchParams(window.location.search);
                 const urlSearch = urlParams.get('search');
 

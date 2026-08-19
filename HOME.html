@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPEC HUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="assets/LOGO%20SPECHUB.png">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(10, 15, 30, 0.4), rgba(10, 15, 30, 0.6)),
+                        url('assets/BK%20LOGUN.jpg') center/cover no-repeat fixed;
+            color: #f8fafc;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+        }
+
+        /* Header Style */
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            padding: 14px 28px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        nav {
+            display: flex !important;
+            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #cbd5e1;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        nav a:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        nav a.active {
+            color: #ffffff;
+            background: rgba(59, 130, 246, 0.25);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            font-weight: 600;
+        }
+
+        .admin-only,
+        .user-only {
+            display: none !important;
+        }
+
+        /* Header Actions Style (ปรับสไตล์ให้เหมือนหน้า CPU) */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        .header-actions a,
+        .header-actions button.auth-btn {
+            color: #ffffff;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 10px 22px;
+            border-radius: 50px; /* ปรับให้โค้งมนแบบ Pill Shape */
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header-actions a:hover,
+        .header-actions button.auth-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8), 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        /* Hero Section Style */
+        .hero {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 32px;
+            align-items: center;
+            padding: 48px;
+            border-radius: 24px;
+            background: rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            top: -100px;
+            right: -100px;
+            pointer-events: none;
+        }
+
+        .hero-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #60a5fa;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle::before {
+            content: '';
+            width: 28px;
+            height: 2px;
+            background: #3b82f6;
+            display: inline-block;
+            border-radius: 2px;
+        }
+
+        .hero-text h1 {
+            font-size: clamp(2.2rem, 3.2vw, 3.8rem);
+            line-height: 1.15;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .hero-text p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 0;
+            max-width: 620px;
+            color: #cbd5e1;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 540px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 14px;
+            padding: 8px 8px 8px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.2s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            color: #f8fafc;
+        }
+
+        .search-box input::placeholder {
+            color: #94a3b8;
+        }
+
+        .search-box button {
+            border: none;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .search-box button:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        .hero-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-image img {
+            width: 100%;
+            max-width: 480px;
+            border-radius: 20px;
+            object-fit: contain;
+            filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.6));
+        }
+
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            z-index: 99999;
+            display: none;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s ease;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #ffffff;
+        }
+
+        .suggestion-item::before {
+            content: '🔍';
+            margin-right: 12px;
+            font-size: 0.85rem;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 992px) {
+            header {
+                grid-template-columns: 1fr;
+                justify-items: center;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding: 32px 24px;
+            }
+
+            .subtitle {
+                justify-content: center;
+            }
+
+            .hero-text p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .search-container {
+                margin: 0 auto 24px auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <header>
+            <a href="HOME.html" class="brand">SPEC HUB</a>
+            <nav>
+                <a href="HOME.html" class="active">HOME</a>
+                <a href="CPU.html">CPU</a>
+                <a href="GPU.html">GPU</a>
+                <a href="CASE.html">CASE</a>
+                <a href="MAIN BORD.html">MAIN BORD</a>
+                <a href="COMPARE.html">COMPARE</a>
+                <a href="ADMIN.html" class="admin-only">⚙️ ADMIN</a>
+                <a href="ADD_PRODUCT.html" class="user-only">💬 SUGGESTIONS</a>
+            </nav>
+            <div class="header-actions">
+                <a href="login.html" id="auth-action">Login</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="hero-text">
+                <div class="subtitle">ค้นหา เปรียบเทียบ ได้ในที่เดียว</div>
+
+                <!-- ช่องค้นหาอุปกรณ์ -->
+                <div class="search-container" style="position: relative; width: 100%; max-width: 540px; margin-bottom: 24px;">
+                    <div class="search-box">
+                        <input type="text" id="homeSearchInput" placeholder="ค้นหาอุปกรณ์ที่ต้องการ..." autocomplete="off">
+                        <button id="homeSearchBtn">ค้นหา</button>
+                    </div>
+                    <div id="homeSuggestions" class="suggestions-box"></div>
+                </div>
+
+                <h1>ข้อมูล CPU และอื่นๆ พร้อมสามารถนำมาเปรียบเทียบได้</h1>
+                <p>SPEC HUB ช่วยให้การเลือกส่วนประกอบคอมพิวเตอร์ง่ายและชัดเจนขึ้น ทั้งซีพียู การ์ดจอ เคส และเมนบอร์ด</p>
+            </div>
+            <div class="hero-image">
+                <img src="https://i.postimg.cc/3NjWMNVQ/1779941107168-(1)-(1).png" alt="GPU illustration">
+            </div>
+        </section>
+    </div>
+
+    <!-- โหลดฐานข้อมูล -->
+    <script src="cpu-data.js"></script>
+    <script src="gpu-data.js"></script>
+    <script src="case-data.js"></script>
+    <script src="mainbord-data.js"></script>
+
+    <!-- สคริปต์จัดการระบบ Auth และ Search -->
+    <script>
+        (function () {
+            function updateAuth() {
+                const authBtn = document.getElementById('auth-action');
+                const adminElements = document.querySelectorAll('.admin-only');
+                const userElements = document.querySelectorAll('.user-only');
+
+                const userSession = JSON.parse(localStorage.getItem('spechub_session')) || null;
+                const legacyUser = localStorage.getItem('spechub_user');
+
+                const username = userSession ? userSession.username : legacyUser;
+                const role = userSession ? userSession.role : (username === 'admin1234' || username === 'admin' ? 'admin' : 'user');
+
+                if (!authBtn) return;
+
+                if (username) {
+                    authBtn.innerHTML = `👤 ${username} (Logout)`;
+                    authBtn.href = '#';
+                    authBtn.onclick = function (e) {
+                        e.preventDefault();
+                        if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) {
+                            localStorage.removeItem('spechub_session');
+                            localStorage.removeItem('spechub_user');
+                            window.location.reload();
+                        }
+                    };
+
+                    userElements.forEach(el => {
+                        el.style.setProperty('display', 'inline-block', 'important');
+                        el.style.visibility = 'visible';
+                    });
+
+                    if (role === 'admin' || username === 'admin1234' || username === 'admin') {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'inline-block', 'important');
+                            el.style.visibility = 'visible';
+                        });
+                    } else {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'none', 'important');
+                            el.style.visibility = 'hidden';
+                        });
+                    }
+                } else {
+                    authBtn.textContent = 'Login';
+                    authBtn.href = 'login.html';
+                    authBtn.onclick = null;
+
+                    userElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.visibility = 'hidden';
+                    });
+                    adminElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                        el.style.visibility = 'hidden';
+                    });
+                }
+            }
+
+            updateAuth();
+        })();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const homeSearchInput = document.getElementById('homeSearchInput');
+            const searchBtn = document.getElementById('homeSearchBtn');
+            const suggestionsBox = document.getElementById('homeSuggestions');
+            const SEARCH_DRAFT_KEY = 'spechub_home_search_draft';
+
+            if (!homeSearchInput) return;
+
+            const savedSearch = localStorage.getItem(SEARCH_DRAFT_KEY);
+            if (savedSearch) {
+                homeSearchInput.value = savedSearch;
+            }
+
+            function getAllProducts() {
+                let products = [];
+
+                const processArray = (arr, categoryName) => {
+                    if (Array.isArray(arr)) {
+                        arr.forEach(item => {
+                            if (item) {
+                                const itemName = item.name || item.model || item.title || item.gpu || item.cpu || item.caseName || item.mainboard;
+                                const searchText = Object.values(item)
+                                    .filter(value => value !== null && value !== undefined)
+                                    .join(' ')
+                                    .toLowerCase();
+
+                                if (itemName) {
+                                    products.push({
+                                        name: String(itemName).trim(),
+                                        category: categoryName,
+                                        searchText,
+                                    });
+                                }
+                            }
+                        });
+                    }
+                };
+
+                if (typeof cpuDatabase !== 'undefined') processArray(cpuDatabase, 'CPU');
+                if (typeof cpuData !== 'undefined') processArray(cpuData, 'CPU');
+                if (typeof cpus !== 'undefined') processArray(cpus, 'CPU');
+
+                if (typeof gpuDatabase !== 'undefined') processArray(gpuDatabase, 'GPU');
+                if (typeof gpuData !== 'undefined') processArray(gpuData, 'GPU');
+                if (typeof gpus !== 'undefined') processArray(gpus, 'GPU');
+
+                if (typeof caseDatabase !== 'undefined') processArray(caseDatabase, 'CASE');
+                if (typeof caseData !== 'undefined') processArray(caseData, 'CASE');
+                if (typeof cases !== 'undefined') processArray(cases, 'CASE');
+
+                if (typeof mainboardDatabase !== 'undefined') processArray(mainboardDatabase, 'MAIN BORD');
+                if (typeof mainbordData !== 'undefined') processArray(mainbordData, 'MAIN BORD');
+                if (typeof mainboardData !== 'undefined') processArray(mainboardData, 'MAIN BORD');
+                if (typeof mainboards !== 'undefined') processArray(mainboards, 'MAIN BORD');
+
+                return products;
+            }
+
+            homeSearchInput.addEventListener('input', function () {
+                const query = homeSearchInput.value.trim().toLowerCase();
+                localStorage.setItem(SEARCH_DRAFT_KEY, homeSearchInput.value);
+
+                suggestionsBox.innerHTML = '';
+
+                if (query === '') {
+                    suggestionsBox.style.display = 'none';
+                    return;
+                }
+
+                const allProducts = getAllProducts();
+                const matched = allProducts.filter(item => item.searchText.includes(query)).slice(0, 6);
+
+                if (matched.length > 0) {
+                    matched.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.innerHTML = `<span>${item.name}</span> <span style="margin-left:auto; font-size:0.8rem; color:#60a5fa; font-weight:600;">[${item.category}]</span>`;
+
+                        div.addEventListener('click', function () {
+                            homeSearchInput.value = item.name;
+                            localStorage.setItem(SEARCH_DRAFT_KEY, item.name);
+                            suggestionsBox.style.display = 'none';
+                            executeSearch(item.name, item.category);
+                        });
+                        suggestionsBox.appendChild(div);
+                    });
+                    suggestionsBox.style.display = 'block';
+                } else {
+                    suggestionsBox.style.display = 'none';
+                }
+            });
+
+            function executeSearch(keyword, category = null) {
+                if (category) {
+                    let targetPage = 'HOME.html';
+                    if (category === 'CPU') targetPage = 'CPU.html';
+                    else if (category === 'GPU') targetPage = 'GPU.html';
+                    else if (category === 'CASE') targetPage = 'CASE.html';
+                    else if (category === 'MAIN BORD') targetPage = 'MAIN BORD.html';
+
+                    window.location.href = `${targetPage}?search=${encodeURIComponent(keyword)}`;
+                } else {
+                    const allProducts = getAllProducts();
+                    const found = allProducts.find(item => item.name.toLowerCase().includes(keyword.toLowerCase()));
+                    if (found) {
+                        executeSearch(keyword, found.category);
+                    } else {
+                        alert('ไม่พบข้อมูลที่คุณค้นหา');
+                    }
+                }
+            }
+
+            function handleSearchTrigger() {
+                const query = homeSearchInput.value.trim();
+                if (query) {
+                    suggestionsBox.style.display = 'none';
+                    executeSearch(query);
+                }
+            }
+
+            if (searchBtn) {
+                searchBtn.addEventListener('click', handleSearchTrigger);
+            }
+
+            homeSearchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    handleSearchTrigger();
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!homeSearchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,6 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/LOGO%20SPECHUB.png">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="theme-style.css">
     <style>
         * {
             box-sizing: border-box;
@@ -33,14 +32,14 @@
             padding: 24px;
         }
 
-        /* Header Style จัดให้อยู่แถวเดียว */
+        /* Header Style ถอดแบบจาก HOME.html */
         header {
             width: 100%;
             max-width: 1200px;
             display: grid;
             grid-template-columns: auto 1fr auto;
             align-items: center;
-            padding: 14px 24px;
+            padding: 14px 28px;
             background: rgba(15, 23, 42, 0.45);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -48,7 +47,7 @@
             border-radius: 16px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             margin-bottom: 30px;
-            gap: 16px;
+            gap: 20px;
         }
 
         /* Brand Logo */
@@ -66,24 +65,23 @@
 
         nav {
             display: flex !important;
-            gap: 8px;
+            gap: 16px;
             align-items: center;
             justify-content: center;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
         }
 
-        /* เมนูทั่วไป */
+        /* ปรับสเปคเมนูให้ตรงกับ HOME.html (padding: 6px 12px, font-weight: 500) */
         nav a,
         nav a:visited,
         nav a.admin-btn-nav,
         nav a.add-data-btn-nav {
-            text-decoration: none !important;
+            text-decoration: none;
             color: #cbd5e1 !important;
             font-weight: 500 !important;
-            font-size: 0.92rem;
-            padding: 6px 10px !important;
-            border-radius: 8px !important;
-            border: 1px solid transparent !important;
+            font-size: 0.95rem;
+            padding: 6px 12px !important;
+            border-radius: 8px;
             transition: all 0.2s ease;
             white-space: nowrap;
             display: inline-flex;
@@ -98,15 +96,11 @@
             background: rgba(255, 255, 255, 0.08) !important;
         }
 
-        /* เมนู Active */
-        nav a.active,
-        nav a.admin-btn-nav.active,
-        nav a.add-data-btn-nav.active {
+        /* เมนู Active ตรงกับ HOME.html */
+        nav a.active {
             color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
             background: rgba(59, 130, 246, 0.25) !important;
             border: 1px solid rgba(59, 130, 246, 0.4) !important;
-            border-radius: 8px !important;
             font-weight: 600 !important;
         }
 
@@ -123,12 +117,12 @@
             white-space: nowrap;
         }
 
-        /* ปุ่ม Login / Logout แบบเรืองแสงมาตรฐาน */
+        /* ปุ่ม Login / Logout ตรงกับ HOME.html */
         .header-actions a,
         .header-actions button.auth-btn {
-            color: #ffffff !important;
+            color: #ffffff;
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            padding: 10px 20px;
+            padding: 10px 22px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 600;
@@ -317,9 +311,7 @@
                 grid-template-columns: 1fr;
                 justify-items: center;
             }
-            nav {
-                flex-wrap: wrap;
-            }
+
             .cards {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -358,9 +350,10 @@
         <section class="hero">
             <div class="hero-top">
                 <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="ค้นหา CPU ที่ต้องการ..." autocomplete="off">
+                    <input type="text" id="searchInput" placeholder="ค้นหา CPU ที่ต้องการ..." list="cpuOptionsCPU" autocomplete="off">
                     <button id="searchBtn" type="button">ค้นหา</button>
                 </div>
+                <datalist id="cpuOptionsCPU"></datalist>
             </div>
 
             <div class="cards" id="cpuListContainer"></div>
@@ -406,10 +399,12 @@
                         }
                     };
 
+                    // ผู้ใช้ทั่วไปล็อกอิน -> แสดง SUGGESTIONS
                     userElements.forEach(el => {
                         el.style.setProperty('display', 'inline-flex', 'important');
                     });
 
+                    // เฉพาะ Admin -> ถึงจะแสดงปุ่ม ADMIN
                     if (role === 'admin' || user === 'admin1234' || user === 'admin') {
                         adminElements.forEach(el => {
                             el.style.setProperty('display', 'inline-flex', 'important');
