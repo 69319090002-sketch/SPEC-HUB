@@ -7,17 +7,13 @@
     "start": "node server.js"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@google/genai": "^2.17.1",
-    "bcrypt": "^6.0.0",
-=======
-    "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.3",
->>>>>>> bf0fdddcdd15f5424020865f3bb100028ec7213a
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^4.22.2",
-    "pg": "^8.22.0"
+    "@google/genai": "^0.1.2",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
   },
   "repository": {
     "type": "git",
@@ -32,6 +28,6 @@
   },
   "homepage": "https://github.com/69319090002-sketch/SPEC-HUB#readme",
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.4"
   }
 }
