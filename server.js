@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// ⚡ ระบบ AI ตรวจกรองคำหยาบ (รองรับทั้ง AQ. และ AIza)
+// ⚡ ระบบ AI ตรวจกรองคำหยาบ + In-Memory Cache (ความเร็วสูงสุด)
 // -----------------------------------------------------------------
 const usernameCache = new Map();
 
@@ -23,7 +23,7 @@ async function validateUsernameWithAI(username) {
 
     const key = username.toLowerCase().trim();
 
-    // 1. ตรวจใน Cache ก่อน
+    // 1. ตรวจใน Cache ก่อน (ตอบกลับทันทีใน 0 ms)
     if (usernameCache.has(key)) {
         const cachedSafe = usernameCache.get(key);
         console.log(`⚡ [Cache Hit] "${username}" -> ${cachedSafe ? 'SAFE' : 'UNSAFE'}`);
@@ -40,21 +40,13 @@ Check for:
 
 Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No other text.`;
 
-        // กำหนด Header ให้รองรับทั้งคีย์ AQ และ AIza
-        const headers = {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': rawApiKey
-        };
-
-        if (rawApiKey.startsWith('AQ.')) {
-            headers['Authorization'] = `Bearer ${rawApiKey}`;
-        }
-
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${rawApiKey}`;
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${rawApiKey}`;
 
         const response = await fetch(endpoint, {
             method: 'POST',
-            headers: headers,
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
