@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ (Groq Llama 3) + In-Memory Cache
+// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ (Groq Mixtral) + In-Memory Cache
 // -----------------------------------------------------------------
 const usernameCache = new Map();
 
@@ -38,7 +38,7 @@ async function validateUsernameWithAI(username) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'llama3-8b-8192',
+                model: 'mixtral-8x7b-32768', // 👈 แก้ไขเป็นโมเดลที่ใช้งานได้
                 messages: [
                     {
                         role: 'system',
