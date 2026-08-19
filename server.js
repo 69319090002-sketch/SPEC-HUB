@@ -10,75 +10,40 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// ⚡ ระบบ AI ตรวจกรองคำหยาบ (ตรงตาม Google cURL Quickstart)
+// ⚡ ระบบตรวจกรองคำหยาบความเร็วสูง (Native Fast Moderator)
 // -----------------------------------------------------------------
-const usernameCache = new Map();
+const BLOCKED_WORDS = [
+    // คำหยาบภาษาไทย / คำด่า / คำผวน
+    'ควย', 'เหี้ย', 'เย็ด', 'ห่า', 'สัส', 'เหด', 'สถุล', 'ระยำ', 'จัญไร', 'ชาติหมา',
+    'หน้าตัวเมีย', 'ดักดาน', 'สันดาน', 'หน้าด้าน', 'กวนตีน', 'กระดอ', 'กระจู๋', 'กระป๋อย',
+    'หี', 'แตด', 'หมอย', 'หำ', 'เงี่ยน', 'เยด', 'เย็', 'ดอ', 'แรด', 'ดอกทอง', 'กะหรี่',
+    'โสเภณี', 'อีเหี้ย', 'อีสัส', 'อีควาย', 'อีดอก', 'ไอ้เหี้ย', 'ไอ้สัส', 'ไอ้ควาย',
+    'ไอ้บ้า', 'กวนส้นตีน', 'สถุน', 'ชั่วช้า', 'สถุล', 'แม่ง', 'พ่องตาย', 'แม่มึง',
+    'เหี้ยม', 'เปรต', 'อีดอกทอง', 'อีกะหรี่', 'สัสเอ๊ย', 'เย็ดแม่', 'เย็ดเข้',
+    
+    // คำคาราโอเกะ / แสลงทับศัพท์
+    'kuay', 'kuy', 'kway', 'dick', 'cock', 'pussy', 'vagina', 'penis', 'bitch', 'slut',
+    'whore', 'fuck', 'fucker', 'fucking', 'shit', 'asshole', 'bastard', 'cunt', 'porn',
+    'sex', 'yed', 'yhed', 'isus', 'sus', 'sat', 'e-dok', 'edok', 'hee', 'tad', 'mor-y',
+    'kwai', 'kwaii', 'e-kwai', 'piss', 'nigger', 'nigga', 'moron', 'idiot'
+];
 
-async function validateUsernameWithAI(username) {
-    const rawApiKey = (process.env.GEMINI_API_KEY || '').trim();
-    if (!rawApiKey) {
-        console.warn('⚠️ ไม่พบ GEMINI_API_KEY ใน Environment Variables');
-        return { isSafe: true };
-    }
+function validateUsernameWithAI(username) {
+    if (!username) return { isSafe: true };
 
-    const key = username.toLowerCase().trim();
+    const raw = username.toLowerCase().trim();
+    // ทำความสะอาดอักขระพิเศษและตัวเลขที่ใช้เลี่ยงคำ (เช่น k.u.a.y หรือ k_u_a_y)
+    const normalized = raw.replace(/[\s\-_.\d@$!#%^&*()+=/\\|<>?,~`]/g, '');
 
-    // 1. ตรวจใน Cache ก่อน (ตอบกลับทันทีใน 0 ms)
-    if (usernameCache.has(key)) {
-        const cachedSafe = usernameCache.get(key);
-        console.log(`⚡ [Cache Hit] "${username}" -> ${cachedSafe ? 'SAFE' : 'UNSAFE'}`);
-        return { isSafe: cachedSafe };
-    }
-
-    try {
-        const prompt = `You are a strict username content moderator.
-Review the username: "${username}"
-Check for:
-1. Profanity, slurs, swear words, insults, derogatory terms, vulgar slang in Thai, English, Isan, Northern, Southern, or Karaoke phonetics (e.g., isus, kwai, hee, yed, dick, asshole).
-2. Hate speech, body shaming, offensive sexual content.
-3. Leetspeak or symbol bypasses.
-
-Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No extra words.`;
-
-        // URL ตาม cURL Quickstart
-        const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
-
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': rawApiKey
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: prompt }]
-                }],
-                generationConfig: {
-                    temperature: 0.0,
-                    maxOutputTokens: 5
-                }
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('❌ AI API Error Response:', JSON.stringify(data));
-            return { isSafe: true };
+    for (const badWord of BLOCKED_WORDS) {
+        if (raw.includes(badWord) || normalized.includes(badWord)) {
+            console.log(`⛔ [Moderation Blocked] "${username}" -> พบคำไม่เหมาะสม: "${badWord}"`);
+            return { isSafe: false };
         }
-
-        const resultText = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim().toUpperCase();
-        const isSafe = !resultText.includes('UNSAFE');
-
-        // บันทึกลง Cache
-        usernameCache.set(key, isSafe);
-
-        console.log(`⚡ [Fast-AI] "${username}" -> ${isSafe ? '✅ ผ่าน (SAFE)' : '⛔ บล็อก (UNSAFE)'}`);
-        return { isSafe };
-    } catch (error) {
-        console.error('❌ AI Moderation Error:', error.message);
-        return { isSafe: true };
     }
+
+    console.log(`✅ [Moderation Passed] "${username}" -> SAFE`);
+    return { isSafe: true };
 }
 
 // -----------------------------------------------------------------
@@ -112,19 +77,19 @@ const handleSignup = async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-        const [aiCheck, checkUser] = await Promise.all([
-            validateUsernameWithAI(cleanUsername),
-            pool.query(
-                'SELECT username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2)',
-                [cleanUsername, cleanEmail]
-            )
-        ]);
-
-        if (!aiCheck.isSafe) {
+        // ตรวจคำหยาบทันที
+        const checkSafe = validateUsernameWithAI(cleanUsername);
+        if (!checkSafe.isSafe) {
             return res.status(400).json({ 
                 message: '❌ ชื่อบัญชีไม่เหมาะสม (มีคำหยาบคาย ดูถูก หรือคำไม่สุภาพ)' 
             });
         }
+
+        // ตรวจสอบข้อมูลซ้ำในฐานข้อมูล Neon
+        const checkUser = await pool.query(
+            'SELECT username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2)',
+            [cleanUsername, cleanEmail]
+        );
 
         if (checkUser.rows.length > 0) {
             const isUsernameTaken = checkUser.rows.some(u => u.username.toLowerCase() === cleanUsername.toLowerCase());
