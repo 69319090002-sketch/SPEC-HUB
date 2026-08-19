@@ -1,7 +1,6 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
-const { GoogleGenAI } = require('@google/genai');
 require('dotenv').config();
 
 const app = express();
@@ -11,20 +10,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ + In-Memory Cache (ความเร็วสูงสุด)
+// ⚡ ระบบ AI ตรวจกรองคำหยาบ (รองรับทั้ง AQ. และ AIza)
 // -----------------------------------------------------------------
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-const usernameCache = new Map(); // แคชเก็บผลการตรวจในหน่วยความจำ RAM
+const usernameCache = new Map();
 
 async function validateUsernameWithAI(username) {
-    if (!process.env.GEMINI_API_KEY) {
+    const rawApiKey = (process.env.GEMINI_API_KEY || '').trim();
+    if (!rawApiKey) {
         console.warn('⚠️ ไม่พบ GEMINI_API_KEY ใน Environment Variables');
         return { isSafe: true };
     }
 
     const key = username.toLowerCase().trim();
 
-    // 1. ตรวจสอบใน Cache ก่อน (ตอบกลับทันทีใน 0 ms)
+    // 1. ตรวจใน Cache ก่อน
     if (usernameCache.has(key)) {
         const cachedSafe = usernameCache.get(key);
         console.log(`⚡ [Cache Hit] "${username}" -> ${cachedSafe ? 'SAFE' : 'UNSAFE'}`);
@@ -32,25 +31,48 @@ async function validateUsernameWithAI(username) {
     }
 
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-3.6-flash',
-            contents: `Username to check: "${username}"`,
-            config: {
-                temperature: 0.0,
-                maxOutputTokens: 2,
-                systemInstruction: `You are a strict username content moderator.
-Review the username for:
-1. Profanity, slurs, swear words, insults, derogatory terms, slang, spoonerisms/euphemisms (Thai/English/Isan/Northern/Southern/Karaoke).
-2. Bullying, hate speech, body shaming, offensive or vulgar language.
-3. Sexual content, anatomy, explicit words.
-4. Leetspeak or symbol bypasses.
+        const prompt = `You are a strict username content moderator.
+Review the username: "${username}"
+Check for:
+1. Profanity, slurs, swear words, insults, derogatory terms, vulgar slang in Thai, English, Isan, Northern, Southern, or Karaoke phonetics (e.g., isus, kwai, hee, yed, dick, asshole).
+2. Hate speech, body shaming, offensive sexual content.
+3. Leetspeak or symbol bypasses.
 
-Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No extra words.`
-            }
+Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No other text.`;
+
+        // กำหนด Header ให้รองรับทั้งคีย์ AQ และ AIza
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': rawApiKey
+        };
+
+        if (rawApiKey.startsWith('AQ.')) {
+            headers['Authorization'] = `Bearer ${rawApiKey}`;
+        }
+
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${rawApiKey}`;
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 0.0,
+                    maxOutputTokens: 5
+                }
+            })
         });
 
-        const rawResult = (response.text || '').trim().toUpperCase();
-        const isSafe = !rawResult.includes('UNSAFE');
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ AI API Error Response:', JSON.stringify(data));
+            return { isSafe: true };
+        }
+
+        const resultText = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim().toUpperCase();
+        const isSafe = !resultText.includes('UNSAFE');
 
         // บันทึกลง Cache
         usernameCache.set(key, isSafe);
@@ -81,7 +103,7 @@ pool.connect((err, client, release) => {
 });
 
 // -----------------------------------------------------------------
-// 1. SIGNUP API (ทำงานคู่ขนาน AI + DB เร็วขึ้น 2 เท่า)
+// 1. SIGNUP API
 // -----------------------------------------------------------------
 const handleSignup = async (req, res) => {
     const { username, email, password } = req.body;
@@ -94,7 +116,6 @@ const handleSignup = async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-        // ⚡ รันตรวจ AI และตรวจฐานข้อมูลพร้อมกันทันที
         const [aiCheck, checkUser] = await Promise.all([
             validateUsernameWithAI(cleanUsername),
             pool.query(
@@ -103,14 +124,12 @@ const handleSignup = async (req, res) => {
             )
         ]);
 
-        // ขั้นตอนที่ 1: เช็กผลการตรวจของ AI
         if (!aiCheck.isSafe) {
             return res.status(400).json({ 
                 message: '❌ ชื่อบัญชีไม่เหมาะสม (มีคำหยาบคาย ดูถูก หรือคำไม่สุภาพ)' 
             });
         }
 
-        // ขั้นตอนที่ 2: เช็กข้อมูลซ้ำในฐานข้อมูล
         if (checkUser.rows.length > 0) {
             const isUsernameTaken = checkUser.rows.some(u => u.username.toLowerCase() === cleanUsername.toLowerCase());
             const isEmailTaken = checkUser.rows.some(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
@@ -126,7 +145,6 @@ const handleSignup = async (req, res) => {
             }
         }
 
-        // ขั้นตอนที่ 3: บันทึกผู้ใช้ใหม่
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
             [cleanUsername, cleanEmail, password]
