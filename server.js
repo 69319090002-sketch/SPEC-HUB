@@ -10,40 +10,76 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// ⚡ ระบบตรวจกรองคำหยาบความเร็วสูง (Native Fast Moderator)
+// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ (Groq Llama 3.3) + In-Memory Cache
 // -----------------------------------------------------------------
-const BLOCKED_WORDS = [
-    // คำหยาบภาษาไทย / คำด่า / คำผวน
-    'ควย', 'เหี้ย', 'เย็ด', 'ห่า', 'สัส', 'เหด', 'สถุล', 'ระยำ', 'จัญไร', 'ชาติหมา',
-    'หน้าตัวเมีย', 'ดักดาน', 'สันดาน', 'หน้าด้าน', 'กวนตีน', 'กระดอ', 'กระจู๋', 'กระป๋อย',
-    'หี', 'แตด', 'หมอย', 'หำ', 'เงี่ยน', 'เยด', 'เย็', 'ดอ', 'แรด', 'ดอกทอง', 'กะหรี่',
-    'โสเภณี', 'อีเหี้ย', 'อีสัส', 'อีควาย', 'อีดอก', 'ไอ้เหี้ย', 'ไอ้สัส', 'ไอ้ควาย',
-    'ไอ้บ้า', 'กวนส้นตีน', 'สถุน', 'ชั่วช้า', 'สถุล', 'แม่ง', 'พ่องตาย', 'แม่มึง',
-    'เหี้ยม', 'เปรต', 'อีดอกทอง', 'อีกะหรี่', 'สัสเอ๊ย', 'เย็ดแม่', 'เย็ดเข้',
-    
-    // คำคาราโอเกะ / แสลงทับศัพท์
-    'kuay', 'kuy', 'kway', 'dick', 'cock', 'pussy', 'vagina', 'penis', 'bitch', 'slut',
-    'whore', 'fuck', 'fucker', 'fucking', 'shit', 'asshole', 'bastard', 'cunt', 'porn',
-    'sex', 'yed', 'yhed', 'isus', 'sus', 'sat', 'e-dok', 'edok', 'hee', 'tad', 'mor-y',
-    'kwai', 'kwaii', 'e-kwai', 'piss', 'nigger', 'nigga', 'moron', 'idiot'
-];
+const usernameCache = new Map();
 
-function validateUsernameWithAI(username) {
-    if (!username) return { isSafe: true };
-
-    const raw = username.toLowerCase().trim();
-    // ทำความสะอาดอักขระพิเศษและตัวเลขที่ใช้เลี่ยงคำ (เช่น k.u.a.y หรือ k_u_a_y)
-    const normalized = raw.replace(/[\s\-_.\d@$!#%^&*()+=/\\|<>?,~`]/g, '');
-
-    for (const badWord of BLOCKED_WORDS) {
-        if (raw.includes(badWord) || normalized.includes(badWord)) {
-            console.log(`⛔ [Moderation Blocked] "${username}" -> พบคำไม่เหมาะสม: "${badWord}"`);
-            return { isSafe: false };
-        }
+async function validateUsernameWithAI(username) {
+    const apiKey = (process.env.GROQ_API_KEY || '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').trim();
+    if (!apiKey) {
+        console.warn('⚠️ ไม่พบ GROQ_API_KEY');
+        return { isSafe: true };
     }
 
-    console.log(`✅ [Moderation Passed] "${username}" -> SAFE`);
-    return { isSafe: true };
+    const key = username.toLowerCase().trim();
+
+    // 1. ตรวจใน Cache ก่อน (0 ms)
+    if (usernameCache.has(key)) {
+        const cachedSafe = usernameCache.get(key);
+        console.log(`⚡ [Cache Hit] "${username}" -> ${cachedSafe ? 'SAFE' : 'UNSAFE'}`);
+        return { isSafe: cachedSafe };
+    }
+
+    try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are a strict username content moderator.
+Review the username for:
+1. Profanity, slurs, swear words, insults, derogatory terms, slang, spoonerisms/euphemisms (Thai/English/Isan/Northern/Southern/Karaoke phonetics like 'isus', 'kwai', 'hee', 'yed', 'dick', 'fuck').
+2. Bullying, hate speech, body shaming, offensive or vulgar language.
+3. Sexual content, anatomy, explicit words.
+4. Leetspeak or symbol bypasses.
+
+Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No extra words.`
+                    },
+                    {
+                        role: 'user',
+                        content: `Username to check: "${username}"`
+                    }
+                ],
+                temperature: 0.0,
+                max_tokens: 5
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ Groq API Error:', JSON.stringify(data));
+            return { isSafe: true };
+        }
+
+        const resultText = (data.choices?.[0]?.message?.content || '').trim().toUpperCase();
+        const isSafe = !resultText.includes('UNSAFE');
+
+        // บันทึกลง Cache
+        usernameCache.set(key, isSafe);
+
+        console.log(`⚡ [Groq-AI] "${username}" -> ${isSafe ? '✅ ผ่าน (SAFE)' : '⛔ บล็อก (UNSAFE)'}`);
+        return { isSafe };
+    } catch (error) {
+        console.error('❌ AI Moderation Error:', error.message);
+        return { isSafe: true };
+    }
 }
 
 // -----------------------------------------------------------------
@@ -64,7 +100,7 @@ pool.connect((err, client, release) => {
 });
 
 // -----------------------------------------------------------------
-// 1. SIGNUP API
+// 1. SIGNUP API (ทำงานคู่ขนาน AI + DB)
 // -----------------------------------------------------------------
 const handleSignup = async (req, res) => {
     const { username, email, password } = req.body;
@@ -77,20 +113,22 @@ const handleSignup = async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-        // ตรวจคำหยาบทันที
-        const checkSafe = validateUsernameWithAI(cleanUsername);
-        if (!checkSafe.isSafe) {
+        const [aiCheck, checkUser] = await Promise.all([
+            validateUsernameWithAI(cleanUsername),
+            pool.query(
+                'SELECT username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2)',
+                [cleanUsername, cleanEmail]
+            )
+        ]);
+
+        // ขั้นตอนที่ 1: เช็กผล AI
+        if (!aiCheck.isSafe) {
             return res.status(400).json({ 
                 message: '❌ ชื่อบัญชีไม่เหมาะสม (มีคำหยาบคาย ดูถูก หรือคำไม่สุภาพ)' 
             });
         }
 
-        // ตรวจสอบข้อมูลซ้ำในฐานข้อมูล Neon
-        const checkUser = await pool.query(
-            'SELECT username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2)',
-            [cleanUsername, cleanEmail]
-        );
-
+        // ขั้นตอนที่ 2: เช็กข้อมูลซ้ำ
         if (checkUser.rows.length > 0) {
             const isUsernameTaken = checkUser.rows.some(u => u.username.toLowerCase() === cleanUsername.toLowerCase());
             const isEmailTaken = checkUser.rows.some(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
@@ -106,6 +144,7 @@ const handleSignup = async (req, res) => {
             }
         }
 
+        // ขั้นตอนที่ 3: บันทึกข้อมูล
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
             [cleanUsername, cleanEmail, password]
