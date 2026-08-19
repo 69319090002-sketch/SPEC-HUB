@@ -14,11 +14,11 @@ app.use(express.urlencoded({ extended: true }));
 // ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ + In-Memory Cache (ความเร็วสูงสุด)
 // -----------------------------------------------------------------
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-const usernameCache = new Map(); // แคชผลการตรวจในหน่วยความจำ RAM
+const usernameCache = new Map(); // แคชเก็บผลการตรวจในหน่วยความจำ RAM
 
 async function validateUsernameWithAI(username) {
     if (!process.env.GEMINI_API_KEY) {
-        console.warn('⚠️ ไม่พบ GEMINI_API_KEY ในไฟล์ .env');
+        console.warn('⚠️ ไม่พบ GEMINI_API_KEY ใน Environment Variables');
         return { isSafe: true };
     }
 
