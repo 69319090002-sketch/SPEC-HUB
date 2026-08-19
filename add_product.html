@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPEC HUB - เสนอความคิดเห็น & คำขออุปกรณ์</title>
+    
+    <!-- เพิ่ม Favicon ตรงนี้เพื่อแก้ข้อผิดพลาด 404 favicon.ico -->
+    <link rel="icon" type="image/png" href="assets/LOGO SPECHUB.png">
+    
+    <!-- Google Fonts & Firebase SDK -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme-style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(10, 15, 30, 0.4), rgba(10, 15, 30, 0.6)),
+                        url('assets/BK%20LOGUN.jpg') center/cover no-repeat fixed;
+            color: #f8fafc;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+        }
+
+        /* Header Style จัดให้อยู่แถวเดียว */
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            padding: 14px 24px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            margin-bottom: 30px;
+            gap: 16px;
+        }
+
+        .brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        nav {
+            display: flex !important;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap; /* ล็อกให้อยู่แถวเดียว ไม่ตกบรรทัด */
+        }
+
+        /* เมนูทั่วไป */
+        nav a,
+        nav a:visited,
+        nav a.admin-btn-nav,
+        nav a.add-data-btn-nav {
+            text-decoration: none !important;
+            color: #cbd5e1 !important;
+            font-weight: 500 !important;
+            font-size: 0.92rem;
+            padding: 6px 10px !important;
+            border-radius: 8px !important;
+            border: 1px solid transparent !important;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        nav a:hover,
+        nav a.admin-btn-nav:hover,
+        nav a.add-data-btn-nav:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* เมนู Active */
+        nav a.active,
+        nav a.add-data-btn-nav.active {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            background: rgba(59, 130, 246, 0.25) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        .header-actions a,
+        .header-actions button.auth-btn {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header-actions a:hover,
+        .header-actions button.auth-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8), 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.35rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 0.95rem; color: #ffffff; }
+        
+        textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+            color: #f8fafc;
+            background-color: rgba(15, 23, 42, 0.6);
+            resize: vertical;
+        }
+
+        textarea::placeholder { color: #94a3b8; }
+        textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            padding: 14px 28px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .login-notice {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .login-notice p {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        .btn-login-now {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff !important;
+            padding: 12px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .btn-login-now:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8);
+        }
+
+        .feedback-list { display: flex; flex-direction: column; gap: 16px; margin-top: 15px; }
+        .feedback-item {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .feedback-item:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .feedback-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 6px; 
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .user-badge { font-weight: 600; color: #60a5fa; font-size: 1rem; }
+        .feedback-date { font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px; }
+        .feedback-content { font-size: 0.95rem; line-height: 1.6; color: #e2e8f0; white-space: pre-line; word-break: break-word; }
+
+        /* ป้ายสถานะ */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .status-pending {
+            background: rgba(234, 179, 8, 0.15);
+            color: #facc15;
+            border: 1px solid rgba(234, 179, 8, 0.4);
+        }
+        .status-completed {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+
+        /* กล่องตอบกลับของแอดมิน */
+        .admin-reply-box {
+            margin-top: 14px;
+            padding: 14px 16px;
+            background: rgba(59, 130, 246, 0.12);
+            border-left: 4px solid #3b82f6;
+            border-radius: 0 10px 10px 0;
+            font-size: 0.95rem;
+            color: #bfdbfe;
+        }
+        .admin-reply-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #60a5fa;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* ปุ่มควบคุมของแอดมิน */
+        .admin-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn-action-done {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-action-done:hover { 
+            background: #059669; 
+            transform: translateY(-1px);
+        }
+
+        .btn-action-reply {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-action-reply:hover { 
+            background: #1d4ed8; 
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .admin-only, .user-only { display: none !important; }
+
+        @media (max-width: 992px) {
+            header { grid-template-columns: 1fr; justify-items: center; }
+            nav { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <header>
+        <a href="HOME.html" class="brand">SPEC HUB</a>
+        <nav>
+            <a href="HOME.html">HOME</a>
+            <a href="CPU.html">CPU</a>
+            <a href="GPU.html">GPU</a>
+            <a href="CASE.html">CASE</a>
+            <a href="MAIN BORD.html">MAIN BORD</a>
+            <a href="COMPARE.html">COMPARE</a>
+            <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
+            <a href="ADD_PRODUCT.html" class="add-data-btn-nav user-only active">💬 SUGGESTIONS</a>
+        </nav>
+        <div class="header-actions">
+            <a href="login.html" id="auth-action">Login</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 1. ฟอร์มเสนอความคิดเห็น -->
+        <div id="feedbackFormCard" class="card user-only">
+            <h2>💬 เสนอความคิดเห็น / เสนอเพิ่มอุปกรณ์ใหม่</h2>
+            <form id="feedbackForm">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="message">รายละเอียดความคิดเห็น / รุ่นอุปกรณ์ที่อยากให้เพิ่ม:</label>
+                        <textarea id="message" rows="4" placeholder="ระบุรุ่นอุปกรณ์ที่อยากให้เพิ่ม หรือข้อเสนอแนะในการพัฒนาเว็บ..." required></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">🚀 ส่งความคิดเห็น</button>
+            </form>
+        </div>
+
+        <!-- 2. การ์ดแจ้งเตือนกรณีผู้ใช้ยังไม่ได้ล็อกอิน -->
+        <div id="loginNoticeCard" class="card login-notice">
+            <h2>🔒 เข้าสู่ระบบเพื่อเสนอความคิดเห็น</h2>
+            <p>คุณต้องเข้าสู่ระบบก่อน จึงจะสามารถเสนอความคิดเห็น หรือส่งคำขอเพิ่มอุปกรณ์ใหม่ได้</p>
+            <a href="login.html" class="btn-login-now">🔑 เข้าสู่ระบบทันที</a>
+        </div>
+
+        <!-- 3. รายการความคิดเห็นทั้งหมด -->
+        <div class="card">
+            <h2>📌 รายการความคิดเห็นและคำขอทั้งหมด</h2>
+            <div id="feedbackContainer" class="feedback-list">
+                <!-- ข้อมูลจาก Firebase Database -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        databaseURL: "https://gen-lang-client-0100210117-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    // -------------------------------------------------------------
+    // ตั้งค่า Telegram Bot เพื่อรับแจ้งเตือนเข้ามือถือ
+    // -------------------------------------------------------------
+    const TELEGRAM_BOT_TOKEN = '8499180082:AAFPL1-YLurXpIdBgLFBqStfALwCEOie-BI';
+    const TELEGRAM_CHAT_ID = '8615304733';
+
+    function sendTelegramNotification(username, message) {
+        if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN.includes('ใส่_BOT_TOKEN')) {
+            console.log(' Telegram Notification Skill: ยังไม่ได้ตั้งค่า Token');
+            return;
+        }
+
+        const text = `🔔 *มีข้อความเสนอแนะนำเข้าใหม่!*\n\n👤 *ผู้ใช้:* ${username}\n💬 *ข้อความ:* ${message}`;
+        
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: text,
+                parse_mode: 'Markdown'
+            })
+        })
+        .then(res => res.json())
+        .catch(err => console.error('Telegram Notify Error:', err));
+    }
+    // -------------------------------------------------------------
+
+    let isAdmin = false;
+    const DRAFT_STORAGE_KEY = 'spechub_suggestion_draft';
+
+    function saveDraft() {
+        const messageEl = document.getElementById('message');
+        if (!messageEl) return;
+        const draft = { message: messageEl.value };
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    }
+
+    function loadDraft() {
+        const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (saved) {
+            try {
+                const draft = JSON.parse(saved);
+                const messageEl = document.getElementById('message');
+                if (draft.message !== undefined && messageEl) {
+                    messageEl.value = draft.message;
+                }
+            } catch (e) {
+                console.error("Error loading draft", e);
+            }
+        }
+    }
+
+    function clearDraft() {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+
+    function getCurrentPage() {
+        return window.location.pathname.split('/').pop() || 'HOME.html';
+    }
+
+    function checkAuth() {
+        const auth = document.getElementById('auth-action');
+        const adminElements = document.querySelectorAll('.admin-only');
+        const userElements = document.querySelectorAll('.user-only');
+        const loginNotice = document.getElementById('loginNoticeCard');
+        
+        const userSession = JSON.parse(localStorage.getItem('spechub_session')) || null;
+        const legacyUser = localStorage.getItem('spechub_user');
+        const user = userSession ? userSession.username : legacyUser;
+        
+        let role = 'user';
+        if (userSession && userSession.role) {
+            role = userSession.role;
+        } else if (user === 'admin1234' || user === 'admin') {
+            role = 'admin';
+        }
+
+        if (!auth) return;
+
+        if (user) {
+            auth.textContent = `👤 ${user} (Logout)`;
+            auth.href = '#';
+            auth.onclick = function (e) {
+                e.preventDefault();
+                if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) {
+                    localStorage.removeItem('spechub_session');
+                    localStorage.removeItem('spechub_user');
+                    window.location = getCurrentPage();
+                }
+            };
+
+            userElements.forEach(el => {
+                el.style.setProperty('display', 'inline-flex', 'important');
+            });
+
+            if (document.getElementById('feedbackFormCard')) {
+                document.getElementById('feedbackFormCard').style.setProperty('display', 'block', 'important');
+            }
+
+            if (loginNotice) {
+                loginNotice.style.setProperty('display', 'none', 'important');
+            }
+
+            if (role === 'admin' || user === 'admin1234' || user === 'admin') {
+                isAdmin = true;
+                adminElements.forEach(el => {
+                    el.style.setProperty('display', 'inline-flex', 'important');
+                });
+            } else {
+                isAdmin = false;
+                adminElements.forEach(el => {
+                    el.style.setProperty('display', 'none', 'important');
+                });
+            }
+        } else {
+            auth.textContent = 'Login';
+            auth.href = 'login.html';
+            auth.onclick = null;
+            isAdmin = false;
+
+            userElements.forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+            });
+            adminElements.forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+            });
+
+            if (loginNotice) {
+                loginNotice.style.setProperty('display', 'block', 'important');
+            }
+        }
+    }
+
+    function listenToFeedbacks() {
+        const container = document.getElementById('feedbackContainer');
+
+        database.ref('feedbacks').on('value', (snapshot) => {
+            const data = snapshot.val();
+
+            if (!data) {
+                container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding: 20px;">ยังไม่มีความคิดเห็นในขณะนี้ เป็นคนแรกที่เสนอแนะกันเข้ามาได้เลย!</div>';
+                return;
+            }
+
+            const feedbacks = Object.keys(data).map(key => ({
+                key: key,
+                status: data[key].status || 'pending',
+                adminReply: data[key].adminReply || '',
+                replyDate: data[key].replyDate || '',
+                ...data[key]
+            })).reverse();
+
+            container.innerHTML = feedbacks.map(item => `
+                <div class="feedback-item">
+                    <div class="feedback-header">
+                        <span class="user-badge">👤 ${escapeHtml(item.username)}</span>
+                        <span class="status-badge ${item.status === 'completed' ? 'status-completed' : 'status-pending'}">
+                            ${item.status === 'completed' ? '✅ ดำเนินการเรียบร้อยแล้ว' : '⏳ รอดำเนินการ'}
+                        </span>
+                    </div>
+                    <div class="feedback-date">🕒 ${item.date}</div>
+                    <div class="feedback-content">${escapeHtml(item.message)}</div>
+                    
+                    ${item.adminReply ? `
+                        <div class="admin-reply-box">
+                            <div class="admin-reply-title">
+                                <span>🛡️ การตอบกลับจากทีมงาน:</span>
+                                <span style="font-size:0.75rem; color:#94a3b8;">${item.replyDate}</span>
+                            </div>
+                            <div>${escapeHtml(item.adminReply)}</div>
+                        </div>
+                    ` : ''}
+
+                    ${isAdmin ? `
+                        <div class="admin-actions">
+                            <button class="btn-action-done" onclick="toggleStatus('${item.key}', '${item.status}')">
+                                ${item.status === 'completed' ? '↩️ ตั้งเป็นรอดำเนินการ' : '✅ ทำเครื่องหมายว่าดำเนินการแล้ว'}
+                            </button>
+                            <button class="btn-action-reply" onclick="replyFeedback('${item.key}')">💬 ตอบกลับ</button>
+                            <button class="btn-delete" onclick="deleteFeedback('${item.key}')">🗑️ ลบความคิดเห็น</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        });
+    }
+
+    function escapeHtml(text) {
+        return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
+    }
+
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const userSession = JSON.parse(localStorage.getItem('spechub_session')) || null;
+            const currentUser = userSession ? userSession.username : localStorage.getItem('spechub_user');
+            const finalName = currentUser || 'ผู้เยี่ยมชมทั่วไป';
+            
+            const messageVal = document.getElementById('message').value.trim();
+            if (!messageVal) return;
+
+            const newFeedback = {
+                username: finalName,
+                message: messageVal,
+                status: 'pending',
+                adminReply: '',
+                replyDate: '',
+                date: new Date().toLocaleString('th-TH')
+            };
+
+            // 1. บันทึกลง Firebase Database
+            database.ref('feedbacks').push(newFeedback)
+                .then(() => {
+                    // 2. ยิงแจ้งเตือนเข้ามือถือผ่าน Telegram
+                    sendTelegramNotification(finalName, messageVal);
+
+                    alert('ขอบคุณสำหรับความคิดเห็น/ข้อเสนอแนะครับ!');
+                    clearDraft();
+                    feedbackForm.reset();
+                })
+                .catch(error => {
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + error.message);
+                });
+        });
+    }
+
+    function toggleStatus(key, currentStatus) {
+        if (!isAdmin) {
+            alert('คุณไม่มีสิทธิ์ในการแก้ไขสถานะ');
+            return;
+        }
+
+        const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+
+        database.ref('feedbacks/' + key).update({
+            status: newStatus
+        }).then(() => {
+            alert(newStatus === 'completed' ? 'เปลี่ยนสถานะเป็น "ดำเนินการเรียบร้อยแล้ว"' : 'เปลี่ยนสถานะเป็น "รอดำเนินการ"');
+        }).catch(error => {
+            alert('เกิดข้อผิดพลาด: ' + error.message);
+        });
+    }
+
+    function replyFeedback(key) {
+        if (!isAdmin) {
+            alert('คุณไม่มีสิทธิ์ในการตอบกลับความคิดเห็น');
+            return;
+        }
+
+        const replyText = prompt('พิมพ์ข้อความตอบกลับผู้ใช้ (เช่น "ดำเนินการเพิ่มอุปกรณ์รุ่นนี้ลงในระบบแล้วครับ"):');
+        
+        if (replyText === null) return;
+        if (replyText.trim() === '') {
+            alert('กรุณากรอกข้อความตอบกลับ');
+            return;
+        }
+
+        database.ref('feedbacks/' + key).update({
+            adminReply: replyText.trim(),
+            replyDate: new Date().toLocaleString('th-TH'),
+            status: 'completed'
+        }).then(() => {
+            alert('บันทึกข้อความตอบกลับเรียบร้อยแล้ว');
+        }).catch(error => {
+            alert('เกิดข้อผิดพลาด: ' + error.message);
+        });
+    }
+
+    function deleteFeedback(key) {
+        if (!isAdmin) {
+            alert('คุณไม่มีสิทธิ์ในการลบความคิดเห็นนี้!');
+            return;
+        }
+
+        if (!confirm('ยืนยันว่าต้องการลบความคิดเห็นนี้ใช่หรือไม่?')) return;
+
+        database.ref('feedbacks/' + key).remove()
+            .then(() => {
+                alert('ลบความคิดเห็นเรียบร้อยแล้ว');
+            })
+            .catch(error => {
+                alert('เกิดข้อผิดพลาดในการลบ: ' + error.message);
+            });
+    }
+
+    window.onload = function() {
+        checkAuth();          
+        loadDraft();
+        listenToFeedbacks();  
+
+        const messageEl = document.getElementById('message');
+        if (messageEl) {
+            messageEl.addEventListener('input', saveDraft);
+        }
+    };
+</script>
+</body>
+</html>

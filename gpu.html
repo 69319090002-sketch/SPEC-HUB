@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPEC HUB - GPU</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/LOGO%20SPECHUB.png">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme-style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(10, 15, 30, 0.4), rgba(10, 15, 30, 0.6)),
+                        url('assets/BK%20LOGUN.jpg') center/cover no-repeat fixed;
+            color: #f8fafc;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+        }
+
+        /* Header Style จัดให้อยู่แถวเดียว */
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            padding: 14px 24px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            margin-bottom: 30px;
+            gap: 16px;
+        }
+
+        /* Brand Logo */
+        .brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        nav {
+            display: flex !important;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap; /* ล็อกให้อยู่แถวเดียว ไม่ตกบรรทัด */
+        }
+
+        /* เมนูทั่วไป */
+        nav a,
+        nav a:visited,
+        nav a.admin-btn-nav,
+        nav a.add-data-btn-nav {
+            text-decoration: none !important;
+            color: #cbd5e1 !important;
+            font-weight: 500 !important;
+            font-size: 0.92rem;
+            padding: 6px 10px !important;
+            border-radius: 8px !important;
+            border: 1px solid transparent !important;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        nav a:hover,
+        nav a.admin-btn-nav:hover,
+        nav a.add-data-btn-nav:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* เมนู Active */
+        nav a.active,
+        nav a.admin-btn-nav.active,
+        nav a.add-data-btn-nav.active {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            background: rgba(59, 130, 246, 0.25) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+
+        /* ซ่อนไว้เป็นค่าเริ่มต้น */
+        .admin-only,
+        .user-only {
+            display: none !important;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        /* ปุ่ม Login / Logout แบบเรืองแสงมาตรฐาน */
+        .header-actions a,
+        .header-actions button.auth-btn {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header-actions a:hover,
+        .header-actions button.auth-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8), 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .hero {
+            width: 100%;
+            max-width: 1200px;
+            padding: 36px 40px;
+            border-radius: 24px;
+            background: rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .hero-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 540px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 14px;
+            padding: 8px 8px 8px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.2s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            color: #f8fafc;
+        }
+
+        .search-box input::placeholder {
+            color: #94a3b8;
+        }
+
+        .search-box button {
+            border: none;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .search-box button:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .card-image {
+            background: rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            padding: 16px;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+        }
+
+        .card-body {
+            padding: 20px 22px 24px;
+        }
+
+        .gpu-name {
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+        }
+
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .spec-table td {
+            padding: 10px 0;
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.92rem;
+        }
+
+        .spec-table td:first-child {
+            color: #94a3b8;
+            width: 42%;
+        }
+
+        .spec-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .card-body .spec-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .no-result {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 992px) {
+            header {
+                grid-template-columns: 1fr;
+                justify-items: center;
+            }
+            nav {
+                flex-wrap: wrap;
+            }
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 740px) {
+            .hero {
+                padding: 24px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <header>
+            <a href="HOME.html" class="brand">SPEC HUB</a>
+            <nav>
+                <a href="HOME.html">HOME</a>
+                <a href="CPU.html">CPU</a>
+                <a href="GPU.html" class="active">GPU</a>
+                <a href="CASE.html">CASE</a>
+                <a href="MAIN BORD.html">MAIN BORD</a>
+                <a href="COMPARE.html">COMPARE</a>
+                <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
+                <a href="ADD_PRODUCT.html" class="add-data-btn-nav user-only">💬 SUGGESTIONS</a>
+            </nav>
+            <div class="header-actions">
+                <a href="login.html" id="auth-action">Login</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="hero-top">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="ค้นหา GPU ที่ต้องการ..." list="gpuOptionsGPU" autocomplete="off">
+                    <button id="searchBtn" type="button">ค้นหา</button>
+                </div>
+                <datalist id="gpuOptionsGPU"></datalist>
+            </div>
+
+            <div class="cards" id="gpuListContainer"></div>
+        </section>
+    </div>
+
+    <!-- โหลดข้อมูลและสคริปต์หลัก GPU -->
+    <script src="gpu-data.js"></script>
+    <script src="gpu-script.js"></script>
+
+    <!-- สคริปต์ Auth และ Search Parameter Handling -->
+    <script>
+        (function () {
+            function getCurrentPage() {
+                return window.location.pathname.split('/').pop() || 'HOME.html';
+            }
+
+            function updateAuth() {
+                const auth = document.getElementById('auth-action');
+                const adminElements = document.querySelectorAll('.admin-only');
+                const userElements = document.querySelectorAll('.user-only');
+                
+                const userSession = JSON.parse(localStorage.getItem('spechub_session')) || null;
+                const legacyUser = localStorage.getItem('spechub_user');
+                const user = userSession ? userSession.username : legacyUser;
+                
+                let role = 'user';
+                if (userSession && userSession.role) {
+                    role = userSession.role;
+                } else if (user === 'admin1234' || user === 'admin') {
+                    role = 'admin';
+                }
+
+                if (!auth) return;
+
+                if (user) {
+                    auth.textContent = `👤 ${user} (Logout)`;
+                    auth.href = '#';
+                    auth.onclick = function (e) {
+                        e.preventDefault();
+                        if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) {
+                            localStorage.removeItem('spechub_session');
+                            localStorage.removeItem('spechub_user');
+                            window.location = getCurrentPage();
+                        }
+                    };
+
+                    userElements.forEach(el => {
+                        el.style.setProperty('display', 'inline-flex', 'important');
+                    });
+
+                    if (role === 'admin' || user === 'admin1234' || user === 'admin') {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'inline-flex', 'important');
+                        });
+                    } else {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'none', 'important');
+                        });
+                    }
+                } else {
+                    auth.textContent = 'Login';
+                    auth.href = 'login.html';
+                    auth.onclick = null;
+
+                    userElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                    });
+                    adminElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                    });
+                }
+            }
+            updateAuth();
+        })();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const SEARCH_DRAFT_KEY = 'spechub_gpu_search_draft';
+
+            if (searchInput) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlSearch = urlParams.get('search');
+
+                if (urlSearch) {
+                    searchInput.value = urlSearch;
+                    localStorage.setItem(SEARCH_DRAFT_KEY, urlSearch);
+                    searchInput.dispatchEvent(new Event('input'));
+                } else {
+                    const savedSearch = localStorage.getItem(SEARCH_DRAFT_KEY);
+                    if (savedSearch) {
+                        searchInput.value = savedSearch;
+                        searchInput.dispatchEvent(new Event('input'));
+                    }
+                }
+
+                searchInput.addEventListener('input', function () {
+                    localStorage.setItem(SEARCH_DRAFT_KEY, searchInput.value);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

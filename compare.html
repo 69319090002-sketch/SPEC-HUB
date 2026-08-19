@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPEC HUB - COMPARE</title>
+
+    <!-- 📌 โลโก้ Favicon บนแท็บบราว์เซอร์ -->
+    <link rel="icon" type="image/png" href="assets/LOGO SPECHUB.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme-style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(10, 15, 30, 0.4), rgba(10, 15, 30, 0.6)),
+                        url('assets/BK%20LOGUN.jpg') center/cover no-repeat fixed;
+            color: #f8fafc;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+        }
+
+        /* Header Style จัดแถวเดียวแบบเดียวกับ ADD_PRODUCT & ADMIN */
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            padding: 14px 24px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            margin-bottom: 30px;
+            gap: 16px;
+        }
+
+        .brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        nav {
+            display: flex !important;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap; /* ล็อกให้อยู่ในแถวเดียว ไม่ตกบรรทัด */
+        }
+
+        /* เมนูทั่วไป */
+        nav a,
+        nav a:visited,
+        nav a.admin-btn-nav,
+        nav a.add-data-btn-nav {
+            text-decoration: none !important;
+            color: #cbd5e1 !important;
+            font-weight: 500 !important;
+            font-size: 0.92rem;
+            padding: 6px 10px !important;
+            border-radius: 8px !important;
+            border: 1px solid transparent !important;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        nav a:hover,
+        nav a.admin-btn-nav:hover,
+        nav a.add-data-btn-nav:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        nav a.active,
+        nav a.admin-btn-nav.active,
+        nav a.add-data-btn-nav.active {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            background: rgba(59, 130, 246, 0.25) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+
+        .admin-only,
+        .user-only {
+            display: none !important;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        .header-actions a,
+        .header-actions button.auth-btn {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header-actions a:hover,
+        .header-actions button.auth-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.8), 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        /* Hero Container */
+        .hero {
+            width: 100%;
+            max-width: 1200px;
+            padding: 36px 40px;
+            border-radius: 24px;
+            background: rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .compare-title {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .compare-title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .compare-title p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        /* Dropdown เลือกหมวดหมู่ */
+        .compare-tools {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin: 0 auto 32px auto;
+        }
+
+        .tool-group-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .tool-group-center label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .compare-tools select {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            background: rgba(15, 23, 42, 0.7);
+            color: #ffffff;
+            outline: none;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            text-align: center;
+            text-align-last: center;
+        }
+
+        .compare-tools select option {
+            background: #0f172a;
+            color: #ffffff;
+            text-align: left;
+        }
+
+        /* Search Section */
+        .compare-search-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .search-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+
+        .search-panel label {
+            text-align: left;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding-left: 4px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 14px;
+            padding: 10px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 0.95rem;
+            color: #ffffff;
+        }
+
+        .search-box input::placeholder {
+            color: #94a3b8;
+        }
+
+        .suggestions-box {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            z-index: 50;
+            overflow: hidden;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 0.92rem;
+            color: #e2e8f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.15s ease;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .suggestion-item .badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            background: rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        /* Compare Cards Grid */
+        .compare-cards {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+        }
+
+        .compare-card {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-height: 380px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .compare-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .card-content {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clear-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #94a3b8;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .clear-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #f87171;
+        }
+
+        /* Placeholder จัดกึ่งกลางการ์ด */
+        .placeholder-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex: 1;
+            min-height: 380px;
+            padding: 30px;
+            text-align: center;
+            gap: 16px;
+            margin: auto;
+        }
+
+        .placeholder-box svg {
+            width: 52px;
+            height: 52px;
+            stroke: #475569;
+        }
+
+        .placeholder-box span {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        /* Product Display Inside Card */
+        .card-image {
+            background: rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: 200px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-image img {
+            max-width: 180px;
+            max-height: 180px;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+        }
+
+        .card-body {
+            padding: 20px 22px 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-name {
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 1.05rem;
+            text-align: center;
+            margin-bottom: 16px;
+            min-height: 1.5em;
+        }
+
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .spec-table td {
+            padding: 10px 0;
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.92rem;
+        }
+
+        .spec-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .spec-table td:first-child {
+            color: #94a3b8;
+            width: 45%;
+        }
+
+        .spec-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            header {
+                grid-template-columns: 1fr;
+                justify-items: center;
+            }
+            nav {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 740px) {
+            .hero {
+                padding: 24px;
+            }
+
+            .compare-search-row,
+            .compare-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <a href="HOME.html" class="brand">SPEC HUB</a>
+            <nav>
+                <a href="HOME.html">HOME</a>
+                <a href="CPU.html">CPU</a>
+                <a href="GPU.html">GPU</a>
+                <a href="CASE.html">CASE</a>
+                <a href="MAIN BORD.html">MAIN BORD</a>
+                <a href="COMPARE.html" class="active">COMPARE</a>
+                <a href="ADMIN.html" class="admin-btn-nav admin-only">⚙️ ADMIN</a>
+                <a href="ADD_PRODUCT.html" class="add-data-btn-nav user-only">💬 SUGGESTIONS</a>
+            </nav>
+            <div class="header-actions">
+                <a href="login.html" id="auth-action">Login</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="compare-title">
+                <h1>เปรียบเทียบสเปคอุปกรณ์</h1>
+                <p>เลือกหมวดหมู่และเลือกสินค้าที่ต้องการเปรียบเทียบแบบข้างต่อข้าง</p>
+            </div>
+            
+            <div class="compare-tools">
+                <div class="tool-group-center">
+                    <label for="categorySelect">หมวดหมู่อุปกรณ์</label>
+                    <select id="categorySelect">
+                        <option value="cpu">💻 CPU (โปรเซสเซอร์)</option>
+                        <option value="gpu">🎮 GPU (การ์ดจอ)</option>
+                        <option value="case">📦 CASE (เคสคอมพิวเตอร์)</option>
+                        <option value="mobo">🔌 MAINBOARD (เมนบอร์ด)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="compare-grid">
+                <div class="compare-search-row">
+                    <div class="search-panel">
+                        <label for="leftProductInput">สินค้าฝั่งซ้าย (A)</label>
+                        <div class="search-container">
+                            <div class="search-box">
+                                <input id="leftProductInput" type="text" placeholder="พิมพ์ชื่อสินค้า..." autocomplete="off">
+                            </div>
+                            <div id="leftSuggestions" class="suggestions-box"></div>
+                        </div>
+                    </div>
+
+                    <div class="search-panel">
+                        <label for="rightProductInput">สินค้าฝั่งขวา (B)</label>
+                        <div class="search-container">
+                            <div class="search-box">
+                                <input id="rightProductInput" type="text" placeholder="พิมพ์ชื่อสินค้า..." autocomplete="off">
+                            </div>
+                            <div id="rightSuggestions" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="compare-cards">
+                    <!-- การ์ดฝั่งซ้าย -->
+                    <div class="compare-card" id="leftCard">
+                        <button class="clear-btn" id="leftClearBtn" title="ล้างการเลือก">✕</button>
+                        <div class="card-content" id="leftCardContent"></div>
+                    </div>
+
+                    <!-- การ์ดฝั่งขวา -->
+                    <div class="compare-card" id="rightCard">
+                        <button class="clear-btn" id="rightClearBtn" title="ล้างการเลือก">✕</button>
+                        <div class="card-content" id="rightCardContent"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ดึงฐานข้อมูลสินค้า -->
+    <script src="cpu-data.js"></script>
+    <script src="gpu-data.js"></script>
+    <script src="case-data.js"></script>
+    <script src="mainbord-data.js"></script>
+
+    <!-- สคริปต์สิทธิ์การใช้งาน -->
+    <script>
+        (function () {
+            function getCurrentPage() {
+                return window.location.pathname.split('/').pop() || 'HOME.html';
+            }
+
+            function updateAuth() {
+                const auth = document.getElementById('auth-action');
+                const adminElements = document.querySelectorAll('.admin-only');
+                const userElements = document.querySelectorAll('.user-only');
+                
+                let userSession = null;
+                try {
+                    userSession = JSON.parse(localStorage.getItem('spechub_session'));
+                } catch (e) {
+                    userSession = null;
+                }
+
+                const legacyUser = localStorage.getItem('spechub_user');
+                const user = userSession ? userSession.username : legacyUser;
+                const role = userSession ? userSession.role : (user === 'admin1234' || user === 'admin' ? 'admin' : 'user');
+
+                if (!auth) return;
+
+                if (user) {
+                    auth.textContent = `👤 ${user} (Logout)`;
+                    auth.href = '#';
+                    auth.onclick = function (e) {
+                        e.preventDefault();
+                        if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) {
+                            localStorage.removeItem('spechub_session');
+                            localStorage.removeItem('spechub_user');
+                            window.location = getCurrentPage();
+                        }
+                    };
+
+                    userElements.forEach(el => {
+                        el.style.setProperty('display', 'inline-flex', 'important');
+                    });
+
+                    if (role === 'admin' || user === 'admin1234' || user === 'admin') {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'inline-flex', 'important');
+                        });
+                    } else {
+                        adminElements.forEach(el => {
+                            el.style.setProperty('display', 'none', 'important');
+                        });
+                    }
+                } else {
+                    auth.textContent = 'Login';
+                    auth.href = 'login.html';
+                    auth.onclick = null;
+
+                    userElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                    });
+                    adminElements.forEach(el => {
+                        el.style.setProperty('display', 'none', 'important');
+                    });
+                }
+            }
+            updateAuth();
+        })();
+    </script>
+
+    <!-- ระบบเปรียบเทียบสเปคหลัก -->
+    <script>
+        (function() {
+            const categorySelect = document.getElementById('categorySelect');
+            const leftInput = document.getElementById('leftProductInput');
+            const rightInput = document.getElementById('rightProductInput');
+            const leftSuggestions = document.getElementById('leftSuggestions');
+            const rightSuggestions = document.getElementById('rightSuggestions');
+            const leftClearBtn = document.getElementById('leftClearBtn');
+            const rightClearBtn = document.getElementById('rightClearBtn');
+
+            const leftCardContent = document.getElementById('leftCardContent');
+            const rightCardContent = document.getElementById('rightCardContent');
+
+            const COMPARE_DRAFT_KEY = 'spechub_compare_draft';
+
+            const categories = {
+                cpu: {
+                    label: 'CPU',
+                    data: () => typeof cpuDatabase !== 'undefined' ? cpuDatabase : [],
+                    specs: [
+                        { label: 'Series', key: 'series' },
+                        { label: 'Socket', key: 'socket' },
+                        { label: 'Cores / Threads', key: 'coresThreads' },
+                        { label: 'Graphics', key: 'graphics' },
+                        { label: 'TDP', key: 'tdp' },
+                        { label: 'Cooler', key: 'cooler' }
+                    ]
+                },
+                gpu: {
+                    label: 'GPU',
+                    data: () => typeof gpuDatabase !== 'undefined' ? gpuDatabase : [],
+                    specs: [
+                        { label: 'Brand', key: 'brand' },
+                        { label: 'Model', key: 'model' },
+                        { label: 'Memory', key: 'memorySize' },
+                        { label: 'Max Resolution', key: 'maxResolution' },
+                        { label: 'Power Req.', key: 'powerRequirement' },
+                        { label: 'Warranty', key: 'warranty' }
+                    ]
+                },
+                case: {
+                    label: 'CASE',
+                    data: () => typeof caseDatabase !== 'undefined' ? caseDatabase : [],
+                    specs: [
+                        { label: 'Type', key: 'type' },
+                        { label: 'Motherboard', key: 'motherboard' },
+                        { label: 'Max GPU Length', key: 'maxGpuLength' },
+                        { label: 'Max CPU Cooler', key: 'maxCpuCooler' },
+                        { label: 'Fan Support', key: 'fanSupport' },
+                        { label: 'Color', key: 'color' }
+                    ]
+                },
+                mobo: {
+                    label: 'MAINBOARD',
+                    data: () => typeof mainboardDatabase !== 'undefined' ? mainboardDatabase : [],
+                    specs: [
+                        { label: 'Socket', key: 'socket' },
+                        { label: 'Form Factor', key: 'formFactor' },
+                        { label: 'Chipset', key: 'chipset' },
+                        { label: 'Memory Slots', key: 'memorySlots' },
+                        { label: 'M.2 Slots', key: 'm2Slots' },
+                        { label: 'USB Ports', key: 'usbPorts' }
+                    ]
+                }
+            };
+
+            function saveCompareDraft() {
+                const draft = {
+                    category: categorySelect.value,
+                    left: leftInput.value,
+                    right: rightInput.value
+                };
+                localStorage.setItem(COMPARE_DRAFT_KEY, JSON.stringify(draft));
+            }
+
+            function loadCompareDraft() {
+                const saved = localStorage.getItem(COMPARE_DRAFT_KEY);
+                if (saved) {
+                    try {
+                        const draft = JSON.parse(saved);
+                        if (draft.category && categories[draft.category]) {
+                            categorySelect.value = draft.category;
+                        }
+                        if (draft.left) leftInput.value = draft.left;
+                        if (draft.right) rightInput.value = draft.right;
+                    } catch (e) {
+                        console.error('Error loading compare draft', e);
+                    }
+                }
+            }
+
+            function getCurrentDatabase() {
+                const category = categorySelect.value;
+                return categories[category] ? categories[category].data() : [];
+            }
+
+            function getSelectedProduct(inputValue, items) {
+                if (!inputValue) return null;
+                return items.find(item => item.name && item.name.toLowerCase().trim() === inputValue.toLowerCase().trim()) || null;
+            }
+
+            function buildSpecRows(product, specList) {
+                if (!product) return '';
+                return specList.map(spec => {
+                    const value = product[spec.key] || '-';
+                    return `
+                        <tr>
+                            <td>${spec.label}</td>
+                            <td>${value}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            function renderCard(product, cardContainer, clearBtn) {
+                if (!product) {
+                    clearBtn.style.display = 'none';
+                    cardContainer.innerHTML = `
+                        <div class="placeholder-box">
+                            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
+                            <span>ค้นหาและเลือกสินค้าเพื่อดูรายละเอียด</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                clearBtn.style.display = 'flex';
+                const imgSrc = product.image || 'https://via.placeholder.com/180?text=No+Image';
+                const category = categorySelect.value;
+                const specList = categories[category].specs;
+
+                cardContainer.innerHTML = `
+                    <div class="card-image">
+                        <img src="${imgSrc}" alt="${product.name}">
+                    </div>
+                    <div class="card-body">
+                        <div class="product-name">${product.name}</div>
+                        <table class="spec-table">
+                            ${buildSpecRows(product, specList)}
+                        </table>
+                    </div>
+                `;
+            }
+
+            function renderComparison() {
+                const items = getCurrentDatabase();
+                const left = getSelectedProduct(leftInput.value, items);
+                const right = getSelectedProduct(rightInput.value, items);
+
+                renderCard(left, leftCardContent, leftClearBtn);
+                renderCard(right, rightCardContent, rightClearBtn);
+            }
+
+            function createSuggestionItem(item, inputEl) {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `
+                    <span>${item.name}</span>
+                    <span class="badge">${categories[categorySelect.value].label}</span>
+                `;
+                div.addEventListener('click', () => {
+                    inputEl.value = item.name;
+                    saveCompareDraft();
+                    renderComparison();
+                    hideSuggestions(inputEl === leftInput ? leftSuggestions : rightSuggestions);
+                });
+                return div;
+            }
+
+            function showSuggestions(inputEl, listEl) {
+                const keyword = inputEl.value.trim().toLowerCase();
+                const items = getCurrentDatabase();
+                const matches = items.filter(item => item.name && item.name.toLowerCase().includes(keyword)).slice(0, 6);
+                
+                if (!keyword || matches.length === 0) {
+                    hideSuggestions(listEl);
+                    return;
+                }
+                
+                listEl.innerHTML = '';
+                matches.forEach(item => listEl.appendChild(createSuggestionItem(item, inputEl)));
+                listEl.style.display = 'block';
+            }
+
+            function hideSuggestions(listEl) {
+                listEl.style.display = 'none';
+            }
+
+            function handleCategoryChange() {
+                leftInput.value = '';
+                rightInput.value = '';
+                saveCompareDraft();
+                renderComparison();
+            }
+
+            // Events
+            categorySelect.addEventListener('change', handleCategoryChange);
+            
+            leftInput.addEventListener('input', () => {
+                saveCompareDraft();
+                renderComparison();
+                showSuggestions(leftInput, leftSuggestions);
+            });
+            
+            leftInput.addEventListener('focus', () => {
+                if (leftInput.value.trim()) {
+                    showSuggestions(leftInput, leftSuggestions);
+                }
+            });
+
+            rightInput.addEventListener('input', () => {
+                saveCompareDraft();
+                renderComparison();
+                showSuggestions(rightInput, rightSuggestions);
+            });
+
+            rightInput.addEventListener('focus', () => {
+                if (rightInput.value.trim()) {
+                    showSuggestions(rightInput, rightSuggestions);
+                }
+            });
+
+            leftClearBtn.addEventListener('click', () => {
+                leftInput.value = '';
+                saveCompareDraft();
+                renderComparison();
+            });
+
+            rightClearBtn.addEventListener('click', () => {
+                rightInput.value = '';
+                saveCompareDraft();
+                renderComparison();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!leftInput.contains(e.target) && !leftSuggestions.contains(e.target)) {
+                    hideSuggestions(leftSuggestions);
+                }
+                if (!rightInput.contains(e.target) && !rightSuggestions.contains(e.target)) {
+                    hideSuggestions(rightSuggestions);
+                }
+            });
+
+            // Init
+            loadCompareDraft();
+            renderComparison();
+        })();
+    </script>
+</body>
+</html>
