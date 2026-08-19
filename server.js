@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// ⚡ ระบบ AI ตรวจกรองคำหยาบ + In-Memory Cache (ความเร็วสูงสุด)
+// ⚡ ระบบ AI ตรวจกรองคำหยาบ (ตรงตาม Google cURL Quickstart)
 // -----------------------------------------------------------------
 const usernameCache = new Map();
 
@@ -38,17 +38,21 @@ Check for:
 2. Hate speech, body shaming, offensive sexual content.
 3. Leetspeak or symbol bypasses.
 
-Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No other text.`;
+Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No extra words.`;
 
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${rawApiKey}`;
+        // URL ตาม cURL Quickstart
+        const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-goog-api-key': rawApiKey
             },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
+                contents: [{
+                    parts: [{ text: prompt }]
+                }],
                 generationConfig: {
                     temperature: 0.0,
                     maxOutputTokens: 5
