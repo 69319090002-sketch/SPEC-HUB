@@ -10,20 +10,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ (Groq Mixtral) + In-Memory Cache
+// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ (OpenRouter AI) + In-Memory Cache
 // -----------------------------------------------------------------
 const usernameCache = new Map();
 
 async function validateUsernameWithAI(username) {
-    const apiKey = (process.env.GROQ_API_KEY || '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').trim();
+    const apiKey = (process.env.OPENROUTER_API_KEY || '').trim();
     if (!apiKey) {
-        console.warn('⚠️ ไม่พบ GROQ_API_KEY');
+        console.warn('⚠️ ไม่พบ OPENROUTER_API_KEY ใน Environment');
         return { isSafe: true };
     }
 
     const key = username.toLowerCase().trim();
 
-    // 1. ตรวจใน Cache ก่อน (0 ms)
     if (usernameCache.has(key)) {
         const cachedSafe = usernameCache.get(key);
         console.log(`⚡ [Cache Hit] "${username}" -> ${cachedSafe ? 'SAFE' : 'UNSAFE'}`);
@@ -31,50 +30,46 @@ async function validateUsernameWithAI(username) {
     }
 
     try {
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'mixtral-8x7b-32768', // 👈 แก้ไขเป็นโมเดลที่ใช้งานได้
+                model: 'meta-llama/llama-3.1-8b-instruct:free',
                 messages: [
                     {
                         role: 'system',
                         content: `You are a strict username content moderator.
 Review the username for:
-1. Profanity, slurs, swear words, insults, derogatory terms, slang, spoonerisms/euphemisms (Thai/English/Isan/Northern/Southern/Karaoke phonetics like 'isus', 'kwai', 'hee', 'yed', 'dick', 'fuck').
-2. Bullying, hate speech, body shaming, offensive or vulgar language.
-3. Sexual content, anatomy, explicit words.
-4. Leetspeak or symbol bypasses.
+1. Profanity, slurs, swear words, insults, derogatory terms in Thai and English.
+2. Slang, spoonerisms (คำผวน), or Karaoke phonetics like 'isus', 'kwai', 'hee', 'yed', 'dick', 'fuck'.
+3. Sexual content or offensive words.
 
-Reply ONLY "UNSAFE" if inappropriate, or "SAFE" if acceptable. No extra words.`
+Reply ONLY with the exact word "UNSAFE" if inappropriate, or "SAFE" if acceptable. Do not output anything else.`
                     },
                     {
                         role: 'user',
-                        content: `Username to check: "${username}"`
+                        content: `Username: "${username}"`
                     }
                 ],
-                temperature: 0.0,
-                max_tokens: 5
+                temperature: 0.0
             })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('❌ Groq API Error:', JSON.stringify(data));
+            console.error('❌ OpenRouter API Error:', JSON.stringify(data));
             return { isSafe: true };
         }
 
         const resultText = (data.choices?.[0]?.message?.content || '').trim().toUpperCase();
         const isSafe = !resultText.includes('UNSAFE');
 
-        // บันทึกลง Cache
         usernameCache.set(key, isSafe);
-
-        console.log(`⚡ [Groq-AI] "${username}" -> ${isSafe ? '✅ ผ่าน (SAFE)' : '⛔ บล็อก (UNSAFE)'}`);
+        console.log(`⚡ [AI Moderation] "${username}" -> ${isSafe ? '✅ ผ่าน (SAFE)' : '⛔ บล็อก (UNSAFE)'}`);
         return { isSafe };
     } catch (error) {
         console.error('❌ AI Moderation Error:', error.message);
@@ -100,7 +95,7 @@ pool.connect((err, client, release) => {
 });
 
 // -----------------------------------------------------------------
-// 1. SIGNUP API (ทำงานคู่ขนาน AI + DB)
+// 1. SIGNUP API
 // -----------------------------------------------------------------
 const handleSignup = async (req, res) => {
     const { username, email, password } = req.body;
@@ -121,14 +116,12 @@ const handleSignup = async (req, res) => {
             )
         ]);
 
-        // ขั้นตอนที่ 1: เช็กผล AI
         if (!aiCheck.isSafe) {
             return res.status(400).json({ 
                 message: '❌ ชื่อบัญชีไม่เหมาะสม (มีคำหยาบคาย ดูถูก หรือคำไม่สุภาพ)' 
             });
         }
 
-        // ขั้นตอนที่ 2: เช็กข้อมูลซ้ำ
         if (checkUser.rows.length > 0) {
             const isUsernameTaken = checkUser.rows.some(u => u.username.toLowerCase() === cleanUsername.toLowerCase());
             const isEmailTaken = checkUser.rows.some(u => u.email.toLowerCase() === cleanEmail.toLowerCase());
@@ -144,7 +137,6 @@ const handleSignup = async (req, res) => {
             }
         }
 
-        // ขั้นตอนที่ 3: บันทึกข้อมูล
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
             [cleanUsername, cleanEmail, password]
