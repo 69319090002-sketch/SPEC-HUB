@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // -----------------------------------------------------------------
-// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ (Groq Llama 3.3) + In-Memory Cache
+// ⚡ ระบบ AI ตรวจกรองชื่อผู้ใช้ (Groq Llama 3) + In-Memory Cache
 // -----------------------------------------------------------------
 const usernameCache = new Map();
 
@@ -38,7 +38,7 @@ async function validateUsernameWithAI(username) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
+                model: 'llama3-8b-8192',
                 messages: [
                     {
                         role: 'system',
